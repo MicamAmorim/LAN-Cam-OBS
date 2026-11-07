@@ -65,7 +65,16 @@ foreach ($file in @('setup-https.ps1','usb-android.ps1','launch-installed.ps1','
 }
 
 if (-not $SkipTests) {
-    Write-Host 'Verificando sintaxe e testes automatizados...'
+    Write-Host 'Verificando sintaxe PowerShell, JavaScript e testes automatizados...'
+    foreach ($item in @('build-installer.ps1','setup-https.ps1','usb-android.ps1','launch-installed.ps1','stop-installed.ps1','configure-wifi.ps1')) {
+        $scriptPath = Join-Path $Root "scripts\$item"
+        $tokens = $null
+        $parseErrors = $null
+        [void][System.Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$parseErrors)
+        if ($parseErrors -and $parseErrors.Count -gt 0) {
+            throw "Erro de sintaxe PowerShell em $item : $($parseErrors[0].Message)"
+        }
+    }
     & $NodeBinary --check (Join-Path $Root 'server.js')
     if ($LASTEXITCODE -ne 0) { throw 'Erro de sintaxe no servidor.' }
     & $NodeBinary --test (Join-Path $Root 'tests\server.test.js')
