@@ -3,7 +3,8 @@
 param(
     [string]$NodeVersion = '24.22.2',
     [switch]$SkipTests,
-    [switch]$NoInstallInno
+    [switch]$NoInstallInno,
+    [string]$IsccPath
 )
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -16,14 +17,46 @@ $DownloadBase = "https://nodejs.org/dist/v$NodeVersion"
 $ProgressPreference = 'SilentlyContinue'
 
 function Find-Iscc {
+    # winget normalmente instala por usuario em LOCALAPPDATA, nao em Program Files.
+    # Permite tambem caminho customizado e busca entradas do registro do Windows.
+    if ($IsccPath) {
+        if (-not (Test-Path -LiteralPath $IsccPath -PathType Leaf)) {
+            throw "Caminho ISCC.exe informado nao existe: $IsccPath"
+        }
+        return (Resolve-Path -LiteralPath $IsccPath).Path
+    }
     $found = Get-Command ISCC.exe -ErrorAction SilentlyContinue
     if ($found) { return $found.Source }
-    $programFilesX86 = [Environment]::GetFolderPath('ProgramFilesX86')
+
     $paths = @()
+    if ($env:LOCALAPPDATA) {
+        $paths += (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 6\ISCC.exe')
+        $paths += (Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Links\ISCC.exe')
+    }
+    $programFilesX86 = [Environment]::GetFolderPath('ProgramFilesX86')
     if ($programFilesX86) { $paths += (Join-Path $programFilesX86 'Inno Setup 6\ISCC.exe') }
     if ($env:ProgramFiles) { $paths += (Join-Path $env:ProgramFiles 'Inno Setup 6\ISCC.exe') }
+    if ($env:ProgramW6432) { $paths += (Join-Path $env:ProgramW6432 'Inno Setup 6\ISCC.exe') }
+
+    $uninstallRoots = @(
+        'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall',
+        'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall',
+        'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall'
+    )
+    foreach ($rootKey in $uninstallRoots) {
+        if (-not (Test-Path -LiteralPath $rootKey)) { continue }
+        foreach ($entry in @(Get-ChildItem -LiteralPath $rootKey -ErrorAction SilentlyContinue)) {
+            $app = Get-ItemProperty -LiteralPath $entry.PSPath -ErrorAction SilentlyContinue
+            if ($app.DisplayName -notlike 'Inno Setup 6*') { continue }
+            foreach ($dir in @($app.InstallLocation, $app.'Inno Setup: App Path')) {
+                if ($dir) { $paths += (Join-Path $dir 'ISCC.exe') }
+            }
+        }
+    }
     foreach ($item in $paths) {
-        if (Test-Path -LiteralPath $item -PathType Leaf) { return $item }
+        if ($item -and (Test-Path -LiteralPath $item -PathType Leaf)) {
+            return (Resolve-Path -LiteralPath $item).Path
+        }
     }
     return $null
 }
@@ -91,7 +124,10 @@ if (-not $iscc -and -not $NoInstallInno) {
     if ($LASTEXITCODE -ne 0) { throw 'Nao foi possivel instalar o Inno Setup via winget.' }
     $iscc = Find-Iscc
 }
-if (-not $iscc) { throw 'ISCC.exe nao encontrado. Instale o Inno Setup 6.' }
+if (-not $iscc) {
+    throw 'ISCC.exe nao localizado. Tente fechar/reabrir o terminal e execute novamente. Se o Inno Setup foi instalado em pasta personalizada, execute .\scripts\build-installer.ps1 -IsccPath "C:\CAMINHO\Inno Setup 6\ISCC.exe".'
+}
+Write-Host "Compilador localizado: $iscc" -ForegroundColor Green
 
 $version = (Get-Content (Join-Path $Root 'package.json') -Raw | ConvertFrom-Json).version
 $iss = Join-Path $Root 'installer\LAN-Cam-OBS.iss'
