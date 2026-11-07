@@ -4,3 +4,7 @@ certs/*
 !certs/.gitkeep
 .DS_Store
 *.log
+
+# Arquivos locais do compilador Windows
+.build/
+dist/
