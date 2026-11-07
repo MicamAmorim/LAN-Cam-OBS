@@ -31,6 +31,8 @@ Aplicativo local, sem nuvem, para transformar o navegador do celular em uma font
    npm start
    ```
 3. No PC acesse **http://localhost:8787**. Você verá links completos e individuais para o celular, OBS e espectadores. O link do OBS não muda entre reinicializações porque a chave fica salva em `.local/state.json`.
+**QR Code no painel:** abaixo de **Copiar endereço** no cartão **Abrir no celular · Wi-Fi**, o aplicativo exibe um QR Code com o link HTTPS completo da câmera. O QR é calculado localmente no navegador (sem serviço externo). Ao escanear com o celular, a URL abre diretamente. Como o QR inclui a chave de acesso, **não o compartilhe** nem exiba o painel em gravações públicas. O celular ainda precisa confiar no certificado HTTPS local.
+
 4. Em **OBS Studio → Fontes → + → Navegador**, cole a URL de **OBS** do painel, defina **largura 1920** e **altura 1080** (ou 1280×720), desmarque **Desligar fonte quando não estiver visível** e **Atualizar navegador quando a cena se tornar ativa**. Em OBS, defina FPS 30 (ou correspondente à câmera). Inicie a câmera no celular.
 
 **Dica de segurança:** a conexão é local, mas qualquer pessoa com o link completo e acesso à rede pode assistir. A URL contém uma chave de acesso. Evite exibi-la na transmissão e não exponha as portas na Internet/roteador. O servidor não grava vídeo.
