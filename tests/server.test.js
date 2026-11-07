@@ -55,10 +55,15 @@ test.after(async () => {
 });
 
 test('páginas, tipos e painel são servidos corretamente', async () => {
-  for (const endpoint of ['/', '/phone', '/obs', '/view', '/app.css', '/phone.js']) {
+  for (const endpoint of ['/', '/phone', '/obs', '/view', '/app.css', '/phone.js', '/dashboard.js', '/vendor/qrcode.js']) {
     const r = await fetch(base + endpoint);
     assert.equal(r.status, 200, endpoint);
   }
+  const dashboard = await (await fetch(base + '/')).text();
+  assert.match(dashboard, /id="phoneQr"/, 'O painel deve incluir QR Code para o celular');
+  assert.match(dashboard, /src="\/vendor\/qrcode\.js"/, 'O QR deve usar biblioteca local');
+  const qrLib = await fetch(base + '/vendor/qrcode.js');
+  assert.match(qrLib.headers.get('content-type'), /javascript/);
   const r = await fetch(base + '/api/config');
   const cfg = await r.json();
   assert.equal(cfg.key, key);
@@ -100,4 +105,17 @@ test('sinalização, permissão de papel e entrega de quadros JPEG', { skip: typ
   phone.ws.close();
   await received(viewer.messages, m => m.type === 'publisher-offline');
   viewer.ws.close();
+});
+
+
+test('gerador QR local codifica o link HTTPS com chave de acesso', () => {
+  const qrcode = require('../public/vendor/qrcode.js');
+  const url = `https://192.168.1.11:8788/phone?key=${key}`;
+  const qr = qrcode(0, 'M');
+  qr.addData(url);
+  qr.make();
+  const count = qr.getModuleCount();
+  assert.ok(count >= 21 && count <= 177, 'matriz QR dentro do padrao');
+  assert.equal(qr.isDark(0, 0), true, 'marcador de posicao presente');
+  assert.equal(qr.isDark(0, 6), true, 'marcador de posicao presente');
 });
