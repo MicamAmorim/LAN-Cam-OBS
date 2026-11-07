@@ -23,6 +23,7 @@ const STATIC = Object.freeze({
   '/view': ['viewer.html', 'text/html; charset=utf-8'],
   '/app.css': ['app.css', 'text/css; charset=utf-8'],
   '/dashboard.js': ['dashboard.js', 'text/javascript; charset=utf-8'],
+  '/vendor/qrcode.js': ['vendor/qrcode.js', 'text/javascript; charset=utf-8'],
   '/phone.js': ['phone.js', 'text/javascript; charset=utf-8'],
   '/viewer.js': ['viewer.js', 'text/javascript; charset=utf-8'],
   '/favicon.svg': ['favicon.svg', 'image/svg+xml']
