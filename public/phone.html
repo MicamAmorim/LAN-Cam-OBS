@@ -1,0 +1,11 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>LAN Cam · Celular</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/app.css"></head><body><main style="max-width:780px">
+  <div class="eyebrow">Emissor de vídeo</div><h1>Câmera do celular</h1><div class="statusline"><span id="status" class="pill offline">Pronto para conectar</span><span id="viewers" class="muted">0 visualizadores</span></div>
+  <div class="preview"><video id="preview" autoplay muted playsinline></video><span id="placeholder" class="placeholder">Toque em “Iniciar câmera”<br>para liberar o vídeo</span></div>
+  <section class="panel"><div class="grid" style="gap:12px">
+    <div class="field"><label for="camera">Câmera</label><select id="camera"><option value="environment">Traseira</option><option value="user">Frontal</option></select></div>
+    <div class="field"><label for="quality">Resolução e FPS</label><select id="quality"><option value="720">1280 × 720 · até 30 FPS</option><option value="1080">1920 × 1080 · até 30 FPS</option><option value="480">854 × 480 · até 24 FPS</option></select></div>
+    <div class="field"><label for="mode">Transporte</label><select id="mode"><option value="webrtc">WebRTC (recomendado no Wi-Fi)</option><option value="jpeg">JPEG por WebSocket (USB/ADB)</option></select></div>
+  </div><div class="actions"><button id="start">Iniciar câmera</button><button id="stop" class="danger" disabled>Parar</button><button id="flip" class="secondary" disabled>Virar câmera</button></div>
+  <div id="error" role="alert" aria-live="polite"></div><p class="footnote">Deixe esta página aberta e o celular desbloqueado. Para reduzir a latência, use 720p, Wi-Fi 5 GHz ou conexão USB, boa iluminação e feche apps que usam a câmera.</p>
+  </section><p id="secureHint" class="hint"></p>
+</main><script src="/phone.js" defer></script></body></html>
