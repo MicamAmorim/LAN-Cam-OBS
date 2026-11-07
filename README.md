@@ -1,5 +1,12 @@
 # LAN Cam OBS
 
+## Instalador Windows (.exe)
+
+A versao **0.2.0** inclui um build de instalador com **Node.js embutido** (nao e necessario instalar Node no computador que recebe o programa). No Windows x64, execute `build.bat` ou, no Git Bash do Windows, `bash build.sh`. O instalador gerado ficara em `dist/LAN-Cam-OBS-Setup-0.2.0-win-x64.exe`. A primeira compilacao usa Inno Setup e baixa o Node.js oficial com verificacao SHA-256. Consulte [INSTALLER.md](INSTALLER.md) para instalacao, uso e observacoes sobre HTTPS, atualizacao e desinstalacao.
+
+O instalador cria atalhos para abrir o painel, configurar HTTPS e encerrar o servidor. **HTTPS no celular ainda exige confiar manualmente na CA local**; esta acao nao e automatizada por motivos de seguranca.
+
+
 ## Instalação rápida (Windows)
 
 Na pasta do repositório, execute **`setup.bat`** (duplo clique) ou, pelo PowerShell:
