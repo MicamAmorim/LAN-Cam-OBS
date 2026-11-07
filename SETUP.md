@@ -1,0 +1,50 @@
+# Instalação automatizada
+
+O LAN Cam OBS usa **Node.js**, não Python; por isso **não necessita de `python`, `pip` ou `.venv`**. O projeto também não tem dependências npm para instalar.
+
+## Windows 10/11 (recomendado)
+
+Na pasta do projeto, dê dois cliques em **`setup.bat`** ou execute no PowerShell:
+
+```powershell
+.\setup.bat
+# ou:
+powershell -NoProfile -ExecutionPolicy Bypass -File .\setup.ps1
+```
+
+O instalador verifica o Node.js 20+, instala o Node LTS (se necessário) com **winget**, instala o **mkcert**, cria o certificado HTTPS para os IPs locais, executa os testes e inicia o servidor. Uma janela do Windows pode solicitar autorização para instalar ou confiar no certificado. Caso não exista `winget`, será necessário instalar o *App Installer* antes. Para instalação apenas, sem iniciar o servidor, use `.\setup.bat -NoStart`.
+
+Também é possível usar Git Bash:
+
+```bash
+bash setup.sh
+```
+
+### Escolher modo de transmissão
+
+```powershell
+.\setup.bat -Mode wifi     # padrão: WebRTC/Wi-Fi + HTTPS
+.\setup.bat -Mode usb      # instala ADB; USB/JPEG, sem HTTPS
+.\setup.bat -Mode both     # configura ambos
+.\setup.bat -NoStart       # não inicia servidor ao terminar
+```
+
+No modo USB, conecte o Android por cabo de dados, habilite depuração USB, autorize o computador e, com o servidor iniciado, execute `powershell -File .\scripts\usb-android.ps1`. O instalador não habilita a depuração no celular automaticamente.
+
+## macOS / Linux
+
+```bash
+bash setup.sh [wifi|usb|both]
+# apenas instalar e testar:
+bash setup.sh wifi --no-start
+```
+
+O script verifica Node.js 20+; pode instalar pelo Homebrew. Para o mkcert, usa Homebrew, apt ou dnf quando disponíveis. Em sistemas não suportados, mostra como instalar manualmente. Para conexão USB, verifica/instala ADB onde houver suporte de pacote.
+
+## Etapa que continua manual (necessária para Wi-Fi)
+
+No **celular**, abra a URL de download da CA pública informada no painel `http://localhost:8787` do computador (acessada no celular pelo IP do PC, como `http://192.168.x.x:8787/local-ca.crt`) e instale o certificado como autoridade confiável **somente no seu aparelho**. Depois abra a URL **HTTPS com chave** indicada no painel para iniciar a câmera. Essa confiança de certificado não pode, nem deve, ser instalada silenciosamente no celular.
+
+**Segurança:** os arquivos de certificado privados em `certs/` e a chave de acesso em `.local/` não devem ser enviados ao Git ou compartilhados. O setup não altera o roteador nem publica o servidor na Internet. Se o endereço IP do PC mudar, execute o setup novamente para gerar um certificado válido para o novo IP. Dependendo do firewall do Windows, você deverá autorizar manualmente o Node.js **apenas em redes privadas**.
+
+Após a instalação, nas próximas execuções basta usar `iniciar.bat` (Windows) ou `node server.js` (macOS/Linux).
