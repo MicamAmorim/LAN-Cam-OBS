@@ -1,5 +1,15 @@
 # LAN Cam OBS
 
+## Instalação rápida (Windows)
+
+Na pasta do repositório, execute **`setup.bat`** (duplo clique) ou, pelo PowerShell:
+
+```powershell
+.\setup.bat
+```
+
+O instalador verifica o **Node.js 20+**, prepara **HTTPS com mkcert** para o Wi-Fi, executa testes e inicia o servidor. Não é necessário criar `.venv`: o projeto é Node.js puro, sem dependências npm. Para usar Git Bash, execute `bash setup.sh`. Os modos `-Mode usb` e `-Mode both` também estão disponíveis. **No celular, instalar/confiar na CA pública ainda exige uma ação manual.** Veja [SETUP.md](SETUP.md) para as instruções completas e observações de segurança.
+
 Aplicativo local, sem nuvem, para transformar o navegador do celular em uma fonte de câmera para o **OBS Studio**. Há dois transportes:
 
 - **WebRTC, via Wi-Fi/LAN:** o servidor Node.js apenas sinaliza; o fluxo de vídeo segue entre celular e cada visualizador (inclusive OBS). Não há retranscodificação no servidor. É a melhor opção inicial para Wi-Fi.
