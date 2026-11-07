@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const fs = require('node:fs');
 const basePort = 20000 + crypto.randomInt(10000);
 const key = 'local_test_access_key_12345';
 const base = `http://127.0.0.1:${basePort}`;
@@ -62,7 +63,10 @@ test('páginas, tipos e painel são servidos corretamente', async () => {
   const cfg = await r.json();
   assert.equal(cfg.key, key);
   assert.equal(cfg.httpPort, basePort);
-  assert.equal(cfg.httpsReady, false);
+  const certDir = path.resolve(__dirname, '..', 'certs');
+  const hasLocalCertificate = fs.existsSync(path.join(certDir, 'lan.pem'))
+    && fs.existsSync(path.join(certDir, 'lan-key.pem'));
+  assert.equal(cfg.httpsReady, hasLocalCertificate, 'O status HTTPS deve refletir os certificados instalados');
   assert.equal((await fetch(base + '/missing')).status, 404);
 });
 
