@@ -1,6 +1,6 @@
 {
   "name": "lan-cam-obs",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "Celular como câmera local para OBS via WebRTC ou USB/ADB, sem dependências npm",
   "type": "commonjs",
