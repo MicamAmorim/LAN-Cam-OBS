@@ -60,12 +60,49 @@
         setTimeout(() => { button.textContent = button.dataset.copy === 'obsLink' ? 'Copiar URL do OBS' : 'Copiar endereço'; }, 1400);
       };
     });
+    const obsTab = byId('selectObs'), webcamTab = byId('selectWebcam');
+    function setOutputMode(mode) {
+      const isWebcam = mode === 'webcam';
+      obsTab.classList.toggle('selected', !isWebcam);
+      webcamTab.classList.toggle('selected', isWebcam);
+      obsTab.setAttribute('aria-pressed', String(!isWebcam));
+      webcamTab.setAttribute('aria-pressed', String(isWebcam));
+      byId('obsSummary').classList.toggle('hidden', isWebcam);
+      byId('webcamSummary').classList.toggle('hidden', !isWebcam);
+    }
+    obsTab.onclick = () => setOutputMode('obs');
+    webcamTab.onclick = () => setOutputMode('webcam');
+    async function webcamAction(action) {
+      byId('webcamStart').disabled = true;
+      byId('webcamStop').disabled = true;
+      try {
+        const resp = await fetch('/api/webcam/' + action, {
+          method: 'POST', headers: { 'X-LAN-CAM': 'dashboard' }
+        });
+        const body = await resp.json();
+        if (!resp.ok) throw new Error(body.error || 'Falha ao alterar a webcam.');
+        await status();
+      } catch (e) {
+        byId('webcamStatus').textContent = e.message;
+        byId('webcamStart').disabled = false;
+      }
+    }
+    byId('webcamStart').onclick = () => webcamAction('start');
+    byId('webcamStop').onclick = () => webcamAction('stop');
     async function status() {
       try {
         const s = await (await fetch('/api/status', { cache: 'no-store' })).json();
         byId('status').textContent = s.connected ? `Câmera conectada · ${s.mode.toUpperCase()}` : 'Aguardando câmera';
         byId('status').classList.toggle('offline', !s.connected);
         byId('count').textContent = `${s.viewers} visualizador(es)`;
+        const webcam = s.webcam || {};
+        byId('webcamStart').disabled = !webcam.supported || !webcam.available || Boolean(webcam.active);
+        byId('webcamStop').disabled = !webcam.active;
+        byId('webcamStatus').textContent = webcam.connected
+          ? 'Ponte conectada. No Meet/Zoom/Teams, selecione LAN Cam Webcam.'
+          : webcam.active ? 'Iniciando a ponte local. Selecione LAN Cam Webcam no aplicativo de reunião.'
+            : webcam.supported ? 'Desativada. Registre o driver no Windows uma vez antes do primeiro uso.'
+              : 'A webcam nativa está disponível apenas no Windows.';
       } catch { byId('status').textContent = 'Servidor indisponível'; }
     }
     await status(); setInterval(status, 2000);
