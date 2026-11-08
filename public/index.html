@@ -1,7 +1,22 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LAN Cam OBS · Painel</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/app.css"></head><body><main>
-  <div class="eyebrow">Local-first · sem nuvem</div><h1>LAN Cam <span style="color:#5adbcf">OBS</span></h1>
-  <p>Use a câmera do celular como fonte de vídeo no OBS. A imagem vai diretamente aos espectadores por WebRTC na mesma rede, ou por quadros JPEG no modo USB com ADB.</p>
+  <div class="brand-hero"><img class="brand-logo" src="/favicon.svg" alt="Ícone LAN Cam"><div><div class="eyebrow">Local-first · sem nuvem</div><h1>LAN Cam <span style="color:#5adbcf">OBS</span></h1></div></div>
+  <p>Transforme seu celular em uma câmera para OBS ou em webcam virtual para Google Meet, Zoom e Teams. Tudo na rede local, sem nuvem.</p>
   <div class="statusline"><span id="status" class="pill offline">Aguardando câmera</span><span id="count" class="muted">0 visualizadores</span></div>
+
+  <section class="panel output-panel" aria-labelledby="output-heading">
+    <h2 id="output-heading">Escolha o modo de saída</h2>
+    <div class="mode-tabs" role="group" aria-label="Saída de vídeo">
+      <button id="selectObs" class="mode-tab selected" type="button" aria-pressed="true">◉ Fonte OBS</button>
+      <button id="selectWebcam" class="mode-tab" type="button" aria-pressed="false">▣ Webcam · Meet / Zoom / Teams</button>
+    </div>
+    <div id="obsSummary"><p>Copie a URL do OBS na seção abaixo. Funciona com a fonte de navegador sem alterar o fluxo atual.</p></div>
+    <div id="webcamSummary" class="hidden">
+      <p>Use <strong>LAN Cam Webcam</strong> como câmera no Google Meet, Zoom ou Teams, sem abrir o OBS. Antes do primeiro uso, instale o driver virtual pelo atalho <strong>LAN Cam OBS - Instalar webcam virtual</strong> no menu Iniciar; o Windows pedirá autorização.</p>
+      <div class="actions"><button id="webcamStart" type="button">Ativar webcam</button><button id="webcamStop" class="secondary" type="button" disabled>Desativar webcam</button></div>
+      <p id="webcamStatus" class="hint" role="status" aria-live="polite">Webcam desativada.</p>
+      <p class="footnote">Com a webcam ativa, o celular também envia JPEG local para o dispositivo virtual. O microfone é configurado separadamente no aplicativo de reunião.</p>
+    </div>
+  </section>
   <div class="grid">
     <section class="panel"><h2>1. Abrir no celular · Wi-Fi</h2><p>Configure o HTTPS uma vez e abra a URL abaixo no navegador do celular, na mesma rede.</p><a id="phoneLink" class="url" href="#">Configurando...</a><div class="actions"><button data-copy="phoneLink">Copiar endereço</button></div><figure id="phoneQrWrap" class="qr-pairing hidden"><div class="qr-card"><canvas id="phoneQr" role="img" aria-label="QR Code com o endereço da câmera para escanear no celular"></canvas></div><figcaption class="footnote">Aponte a câmera do celular para abrir o link HTTPS. O QR contém a chave de acesso: não compartilhe fotos dele.</figcaption></figure><p id="phoneQrError" class="footnote hidden" role="status"></p><p id="httpsHint" class="footnote"></p></section>
     <section class="panel"><h2>2. Adicionar ao OBS</h2><p>No OBS: <b>Fontes → + → Navegador</b>. Cole este endereço e ajuste o tamanho para 1920 × 1080 (ou 1280 × 720).</p><a id="obsLink" class="url" href="#">Configurando...</a><div class="actions"><button data-copy="obsLink">Copiar URL do OBS</button></div><p class="footnote">Deixe “Desligar fonte quando não estiver visível” desmarcado para evitar reconexões.</p></section>
