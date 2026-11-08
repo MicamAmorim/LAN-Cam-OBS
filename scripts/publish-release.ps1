@@ -40,9 +40,9 @@ No Windows, registre o dispositivo virtual uma unica vez pelo atalho LAN Cam OBS
 O modo webcam dispensa o OBS e transmite video, nao microfone. A instalacao do driver e opcional.
 Primeiro release publico: teste a instalacao e a compatibilidade com seus aplicativos/dispositivos antes de distribuicao em larga escala.
 '@
-$args = @('release','create',$tag,$installer,$checksum,'--repo',$Repository,
+$releaseArgs = @('release','create',$tag,$installer,$checksum,'--repo',$Repository,
   '--target',$commit,'--title',"LAN Cam OBS $tag",'--notes',$notes)
-if (-not $Stable) { $args += '--prerelease' }
-& gh @args
+if (-not $Stable) { $releaseArgs += '--prerelease' }
+& gh @releaseArgs
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao criar GitHub Release.' }
 Write-Host "Publicado: https://github.com/$Repository/releases/tag/$tag" -ForegroundColor Green
