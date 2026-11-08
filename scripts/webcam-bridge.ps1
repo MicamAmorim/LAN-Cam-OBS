@@ -25,7 +25,7 @@ public static class LanCamWebcamBridge
         if (accessor != null) return true;
         try
         {
-            map = MemoryMappedFile.OpenExisting("UnityCapture_Data", MemoryMappedFileRights.Write);
+            map = MemoryMappedFile.OpenExisting("UnityCapture_Data", MemoryMappedFileRights.ReadWrite);
             accessor = map.CreateViewAccessor(0, 0, MemoryMappedFileAccess.Write);
             mutex = Mutex.OpenExisting("UnityCapture_Mutx");
             sent = EventWaitHandle.OpenExisting("UnityCapture_Sent");
@@ -99,7 +99,8 @@ public static class LanCamWebcamBridge
         catch (UnauthorizedAccessException) { Detach(); }
         catch (ObjectDisposedException) { Detach(); }
         catch (IOException) { Detach(); }
-        catch (ArgumentException) { /* imagem inválida: ignorar quadro */ }
+        catch (ArgumentException) { /* JPEG inválido: descartar quadro */ }
+        catch (OutOfMemoryException) { /* JPEG inválido: descartar quadro */ }
     }
     public static void Run(string port, string key)
     {
