@@ -13,7 +13,7 @@ function Rounded([int]$x,[int]$y,[int]$w,[int]$h,[int]$r) {
     $p.CloseFigure()
     return $p
 }
-$bitmap = New-Object System.Drawing.Bitmap(256,256,[System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+$bitmap = [System.Drawing.Bitmap]::new(256,256,[System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
 $g = [System.Drawing.Graphics]::FromImage($bitmap)
 $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
 $bg = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
@@ -22,12 +22,12 @@ $bg = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
 $teal = [System.Drawing.Drawing2D.LinearGradientBrush]::new(
     [System.Drawing.Point]::new(0,0),[System.Drawing.Point]::new(256,256),
     [System.Drawing.Color]::FromArgb(22,205,240),[System.Drawing.Color]::FromArgb(0,242,182))
-$white = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(245,251,255))
-$phone = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(10,40,90))
-$dark = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(6,20,48))
-$border = New-Object System.Drawing.Pen([System.Drawing.Color]::White,9)
-$signal = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(0,239,202),10)
-$orbit = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(0,232,217),13)
+$white = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(245,251,255))
+$phone = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(10,40,90))
+$dark = [System.Drawing.SolidBrush]::new([System.Drawing.Color]::FromArgb(6,20,48))
+$border = [System.Drawing.Pen]::new([System.Drawing.Color]::White,9)
+$signal = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(0,239,202),10)
+$orbit = [System.Drawing.Pen]::new([System.Drawing.Color]::FromArgb(0,232,217),13)
 try {
     $outer = Rounded 1 1 254 254 51
     $g.FillPath($bg,$outer)
@@ -57,7 +57,7 @@ try {
     $dir = [System.IO.Path]::GetDirectoryName([System.IO.Path]::GetFullPath($OutputPath))
     New-Item -ItemType Directory -Path $dir -Force | Out-Null
     $file = [System.IO.File]::Create($OutputPath)
-    $writer = New-Object System.IO.BinaryWriter($file)
+    $writer = [System.IO.BinaryWriter]::new($file)
     try {
         $writer.Write([UInt16]0); $writer.Write([UInt16]1); $writer.Write([UInt16]1)
         $writer.Write([byte]0); $writer.Write([byte]0)
