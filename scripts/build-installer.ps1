@@ -85,7 +85,7 @@ Write-Host 'Runtime verificado com SHA-256 do Node.js oficial.' -ForegroundColor
 
 if (Test-Path -LiteralPath $Stage) { Remove-Item -LiteralPath $Stage -Recurse -Force }
 New-Item -ItemType Directory -Force -Path $Stage | Out-Null
-foreach ($file in @('server.js','package.json','README.md','SETUP.md','INSTALLER.md')) {
+foreach ($file in @('server.js','package.json','README.md','SETUP.md','INSTALLER.md','THIRD_PARTY_NOTICES.md')) {
     Copy-Item -LiteralPath (Join-Path $Root $file) -Destination $Stage -Force
 }
 foreach ($dir in @('lib','public')) {
@@ -93,13 +93,50 @@ foreach ($dir in @('lib','public')) {
 }
 New-Item -ItemType Directory -Force -Path (Join-Path $Stage 'runtime'), (Join-Path $Stage 'scripts') | Out-Null
 Copy-Item -LiteralPath $NodeBinary -Destination (Join-Path $Stage 'runtime\node.exe') -Force
-foreach ($file in @('setup-https.ps1','usb-android.ps1','launch-installed.ps1','stop-installed.ps1','configure-wifi.ps1')) {
+foreach ($file in @('setup-https.ps1','usb-android.ps1','launch-installed.ps1','stop-installed.ps1','configure-wifi.ps1','webcam-bridge.ps1','install-webcam-driver.ps1')) {
     Copy-Item -LiteralPath (Join-Path $Root "scripts\$file") -Destination (Join-Path $Stage 'scripts') -Force
 }
 
+
+# Icone para instalador e atalhos do Windows.
+$IconPath = Join-Path $Stage 'assets\lan-cam.ico'
+& (Join-Path $PSHOME 'powershell.exe') -NoProfile -ExecutionPolicy Bypass -File (Join-Path $Root 'scripts\generate-app-icon.ps1') -OutputPath $IconPath
+if ($LASTEXITCODE -ne 0 -or -not (Test-Path $IconPath)) { throw 'Falha ao gerar icone Windows.' }
+
+# Driver MIT opcional, fixado em commit imutavel; verificar Git blob dos binarios.
+$UnityCommit = '3ed54c325e0ad71afcf4f246c07e5e17b3d7f2d2'
+$Dlls = @(
+    @{ Name='UnityCaptureFilter32.dll'; GitBlob='da0b41011faa1de004c8b58f57ad02eea3d10233' },
+    @{ Name='UnityCaptureFilter64.dll'; GitBlob='cd6d7de9e25fe67e6ba1c8e57b01a634412e562d' }
+)
+$DriverCache = Join-Path $CacheDir 'unitycapture'
+$DriverStage = Join-Path $Stage 'driver'
+New-Item -ItemType Directory -Path $DriverCache,$DriverStage -Force | Out-Null
+foreach ($entry in $Dlls) {
+    $cached = Join-Path $DriverCache $entry.Name
+    if (-not (Test-Path -LiteralPath $cached)) {
+        $uri = "https://raw.githubusercontent.com/schellingb/UnityCapture/$UnityCommit/Install/$($entry.Name)"
+        Invoke-WebRequest -Uri $uri -OutFile $cached -UseBasicParsing
+    }
+    $bytes = [IO.File]::ReadAllBytes($cached)
+    $header = [Text.Encoding]::ASCII.GetBytes(('blob ' + $bytes.Length + [char]0))
+    $blob = New-Object byte[] ($header.Length + $bytes.Length)
+    [Array]::Copy($header,0,$blob,0,$header.Length)
+    [Array]::Copy($bytes,0,$blob,$header.Length,$bytes.Length)
+    $sha1 = [Security.Cryptography.SHA1]::Create()
+    try { $actual = [BitConverter]::ToString($sha1.ComputeHash($blob)).Replace('-','').ToLowerInvariant() }
+    finally { $sha1.Dispose() }
+    if ($actual -ne $entry.GitBlob) {
+        Remove-Item -LiteralPath $cached -Force
+        throw "Driver $($entry.Name) difere da revisao fixada. Build cancelado."
+    }
+    Copy-Item -LiteralPath $cached -Destination $DriverStage -Force
+}
+Write-Host 'Driver UnityCapture verificado (MIT).' -ForegroundColor Green
+
 if (-not $SkipTests) {
     Write-Host 'Verificando sintaxe PowerShell, JavaScript e testes automatizados...'
-    foreach ($item in @('build-installer.ps1','setup-https.ps1','usb-android.ps1','launch-installed.ps1','stop-installed.ps1','configure-wifi.ps1')) {
+    foreach ($item in @('build-installer.ps1','setup-https.ps1','usb-android.ps1','launch-installed.ps1','stop-installed.ps1','configure-wifi.ps1','webcam-bridge.ps1','install-webcam-driver.ps1','generate-app-icon.ps1')) {
         $scriptPath = Join-Path $Root "scripts\$item"
         $tokens = $null
         $parseErrors = $null
