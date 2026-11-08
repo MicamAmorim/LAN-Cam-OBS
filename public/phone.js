@@ -8,7 +8,7 @@
   const pcMap = new Map();
   const pending = new Map();
   let stream, socket, active = false, connecting = false, wakeLock, jpegTimer, viewerCount = 0;
-  let sendMode = 'webrtc', jpegEpoch = 0;
+  let sendMode = 'webrtc', jpegEpoch = 0, webcamEnabled = false;
   const setStatus = (text, online = false) => { $('status').textContent = text; $('status').classList.toggle('offline', !online); };
   const setError = text => { $('error').textContent = text || ''; };
   const send = msg => { if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify(msg)); };
@@ -57,7 +57,7 @@
   document.addEventListener('visibilitychange', () => { if (!document.hidden && active) tryWakeLock(); });
   function stopCamera() {
     active = false;
-    jpegEpoch++; clearTimeout(jpegTimer); clearPeers(); pending.clear();
+    jpegEpoch++; webcamEnabled = false; clearTimeout(jpegTimer); clearPeers(); pending.clear();
     if (socket) { socket.onclose = null; socket.close(); socket = null; }
     if (stream) { for (const track of stream.getTracks()) track.stop(); stream = null; }
     if (wakeLock) { wakeLock.release().catch(() => {}); wakeLock = null; }
@@ -78,9 +78,14 @@
         if (msg.type === 'welcome') {
           send({ type: 'mode', mode: sendMode });
           setCount(msg.viewers?.length || 0);
+          webcamEnabled = Boolean(msg.webcamEnabled);
           if (sendMode === 'webrtc') for (const id of msg.viewers || []) createOffer(id);
-          else startJpeg();
+          if (sendMode === 'jpeg' || webcamEnabled) startJpeg();
           setStatus(`Transmitindo · ${sendMode === 'jpeg' ? 'USB/JPEG' : 'WebRTC'}`, true);
+        } else if (msg.type === 'webcam') {
+          webcamEnabled = Boolean(msg.enabled);
+          if (sendMode === 'jpeg' || webcamEnabled) startJpeg();
+          else { jpegEpoch++; clearTimeout(jpegTimer); }
         } else if (msg.type === 'viewer-joined') {
           setCount(viewerCount + 1);
           if (sendMode === 'webrtc') createOffer(msg.id);
@@ -132,9 +137,9 @@
     const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
     const desiredInterval = $('quality').value === '480' ? 42 : 34;
     const tick = () => {
-      if (!active || epoch !== jpegEpoch || sendMode !== 'jpeg' || socket?.readyState !== WebSocket.OPEN) return;
+      if (!active || epoch !== jpegEpoch || (sendMode !== 'jpeg' && !webcamEnabled) || socket?.readyState !== WebSocket.OPEN) return;
       const startedAt = performance.now();
-      if (viewerCount && socket.bufferedAmount < 800_000 && $('preview').videoWidth) {
+      if ((viewerCount || webcamEnabled) && socket.bufferedAmount < 800_000 && $('preview').videoWidth) {
         const source = $('preview');
         const limit = $('quality').value === '1080' ? 1600 : $('quality').value === '480' ? 854 : 1280;
         const scale = Math.min(1, limit / source.videoWidth);

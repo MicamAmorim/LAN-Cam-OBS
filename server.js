@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 const crypto = require('node:crypto');
+const { spawn } = require('node:child_process');
 const { WebSocket, WebSocketServer } = require('./lib/ws-lite');
 
 const HTTP_PORT = Number(process.env.HTTP_PORT || 8787);
@@ -50,6 +51,34 @@ const viewers = new Map();
 let publisher = null;
 let publishedMode = 'webrtc';
 const peers = new Set();
+let webcamProcess = null;
+let webcamClient = null;
+const webcamBridgeScript = path.join(ROOT, 'scripts', 'webcam-bridge.ps1');
+const webcamActive = () => Boolean(webcamProcess && webcamProcess.exitCode === null && !webcamProcess.killed);
+function webcamInfo() {
+  return { supported: process.platform === 'win32', available: fs.existsSync(webcamBridgeScript),
+    active: webcamActive(), connected: Boolean(webcamClient && webcamClient.readyState === WebSocket.OPEN),
+    deviceName: 'LAN Cam Webcam' };
+}
+function startWebcam() {
+  if (webcamActive()) return { ok: true, ...webcamInfo() };
+  if (process.platform !== 'win32') return { ok: false, error: 'Webcam virtual disponível apenas no Windows.' };
+  if (!fs.existsSync(webcamBridgeScript)) return { ok: false, error: 'Ponte da webcam ausente. Reinstale.' };
+  webcamProcess = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy',
+    'Bypass', '-File', webcamBridgeScript], { cwd: ROOT, windowsHide: true, stdio: 'ignore',
+    env: { ...process.env, LAN_CAM_PORT: String(HTTP_PORT), LAN_CAM_KEY: accessKey } });
+  webcamProcess.on('error', err => console.error('Webcam bridge:', err.message));
+  webcamProcess.on('exit', () => {
+    webcamProcess = null;
+    if (webcamClient) webcamClient.close(1001, 'Ponte encerrada');
+  });
+  return { ok: true, ...webcamInfo() };
+}
+function stopWebcam() {
+  if (webcamProcess) { webcamProcess.kill(); webcamProcess = null; }
+  if (webcamClient) webcamClient.close(1001, 'Webcam desligada');
+  return { ok: true, ...webcamInfo() };
+}
 
 const isLoopback = address => ['127.0.0.1', '::1', '::ffff:127.0.0.1'].includes(address);
 const networkIps = () => Object.values(os.networkInterfaces())
@@ -66,7 +95,6 @@ function response(req, res) {
   let pathname;
   try { pathname = new URL(req.url, 'http://local.invalid').pathname; }
   catch { res.writeHead(400).end(); return; }
-  if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end(); return; }
   const headers = {
     'X-Content-Type-Options': 'nosniff',
     'Referrer-Policy': 'no-referrer',
@@ -74,12 +102,28 @@ function response(req, res) {
     'Permissions-Policy': 'camera=(self), microphone=(self)',
     'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src blob:; connect-src 'self' ws: wss:; object-src 'none'; base-uri 'none'"
   };
+  if (pathname === '/api/webcam/start' || pathname === '/api/webcam/stop') {
+    if (req.method !== 'POST') { res.writeHead(405, headers).end(); return; }
+    let validOrigin = true;
+    if (req.headers.origin) {
+      try { validOrigin = new URL(req.headers.origin).host === req.headers.host; }
+      catch (_) { validOrigin = false; }
+    }
+    // Ação local protegida por cabeçalho não simples contra requisições de outro site.
+    if (!isLoopback(req.socket.remoteAddress) || req.headers['x-lan-cam'] !== 'dashboard' || !validOrigin) {
+      res.writeHead(403, headers).end('Acesso negado'); return;
+    }
+    const result = pathname.endsWith('/start') ? startWebcam() : stopWebcam();
+    res.writeHead(result.ok ? 200 : 501, { ...headers, 'Content-Type': 'application/json; charset=utf-8' });
+    res.end(JSON.stringify(result)); return;
+  }
+  if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405, headers).end(); return; }
   if (pathname === '/api/config' || pathname === '/api/status') {
     if (!isLoopback(req.socket.remoteAddress)) { res.writeHead(403, headers).end('Painel disponível apenas no computador.'); return; }
     const ips = networkIps();
     const payload = pathname === '/api/config'
       ? { key: accessKey, httpPort: HTTP_PORT, httpsPort: HTTPS_PORT, httpsReady: fs.existsSync(CERT) && fs.existsSync(KEY), ips }
-      : { connected: Boolean(publisher), mode: publishedMode, viewers: viewers.size };
+      : { connected: Boolean(publisher), mode: publishedMode, viewers: viewers.size, webcam: webcamInfo() };
     res.writeHead(200, { ...headers, 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify(payload)); return;
   }
@@ -103,9 +147,10 @@ function upgrade(req, socket, head) {
   catch { socket.destroy(); return; }
   const role = url.searchParams.get('role');
   const key = url.searchParams.get('key');
-  if (url.pathname !== '/signal' || !['phone', 'viewer'].includes(role) || key !== accessKey) {
+  if (url.pathname !== '/signal' || !['phone', 'viewer', 'webcam'].includes(role) || key !== accessKey) {
     socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n'); socket.destroy(); return;
   }
+  if (role === 'webcam' && (!isLoopback(req.socket.remoteAddress) || !webcamActive())) { socket.destroy(); return; }
   // Restringe scripts de outras origens que tentem usar a porta local.
   if (req.headers.origin) {
     try {
@@ -124,11 +169,16 @@ wss.on('connection', ws => {
   ws.isAlive = true;
   ws.on('pong', () => { ws.isAlive = true; });
   peers.add(ws);
-  if (ws.role === 'phone') {
+  if (ws.role === 'webcam') {
+    if (webcamClient && webcamClient !== ws) webcamClient.close(4001, 'Ponte reiniciada');
+    webcamClient = ws;
+    sendJson(ws, { type: 'welcome', mode: 'webcam' });
+    notifyPublisher({ type: 'webcam', enabled: true });
+  } else if (ws.role === 'phone') {
     if (publisher && publisher !== ws) publisher.close(4001, 'Outra câmera assumiu a transmissão');
     publisher = ws;
     publishedMode = 'webrtc';
-    sendJson(ws, { type: 'welcome', id: ws.id, viewers: [...viewers.keys()] });
+    sendJson(ws, { type: 'welcome', id: ws.id, viewers: [...viewers.keys()], webcamEnabled: Boolean(webcamClient) });
     broadcast({ type: 'publisher-online', mode: publishedMode });
   } else {
     viewers.set(ws.id, ws);
@@ -137,9 +187,14 @@ wss.on('connection', ws => {
   }
   ws.on('message', (raw, isBinary) => {
     if (isBinary) {
-      if (ws === publisher && publishedMode === 'jpeg') {
-        for (const v of viewers.values()) {
-          if (v.readyState === WebSocket.OPEN && v.bufferedAmount < 1_500_000) v.send(raw, { binary: true });
+      if (ws === publisher) {
+        if (publishedMode === 'jpeg') {
+          for (const v of viewers.values()) {
+            if (v.readyState === WebSocket.OPEN && v.bufferedAmount < 1_500_000) v.send(raw, { binary: true });
+          }
+        }
+        if (webcamClient && webcamClient.readyState === WebSocket.OPEN && webcamClient.bufferedAmount < 1_000_000) {
+          webcamClient.send(raw, { binary: true });
         }
       }
       return;
@@ -167,6 +222,7 @@ wss.on('connection', ws => {
     peers.delete(ws);
     if (publisher === ws) { publisher = null; broadcast({ type: 'publisher-offline' }); }
     if (viewers.get(ws.id) === ws) { viewers.delete(ws.id); notifyPublisher({ type: 'viewer-left', id: ws.id }); }
+    if (webcamClient === ws) { webcamClient = null; notifyPublisher({ type: 'webcam', enabled: false }); }
   });
   ws.on('error', () => {});
 });
