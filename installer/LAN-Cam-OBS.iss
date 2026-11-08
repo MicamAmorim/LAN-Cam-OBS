@@ -29,6 +29,8 @@ CloseApplications=yes
 RestartApplications=no
 VersionInfoVersion={#AppVersion}
 VersionInfoDescription=LAN Cam OBS
+SetupIconFile={#StageDir}\assets\lan-cam.ico
+UninstallDisplayIcon={app}\assets\lan-cam.ico
 
 [Tasks]
 Name: "desktopicon"; Description: "Criar atalho na area de trabalho"; GroupDescription: "Atalhos:"; Flags: unchecked
@@ -37,10 +39,12 @@ Name: "desktopicon"; Description: "Criar atalho na area de trabalho"; GroupDescr
 Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{autoprograms}\LAN Cam OBS"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\launch-installed.ps1"""; WorkingDir: "{app}"
-Name: "{autoprograms}\LAN Cam OBS - Configurar Wi-Fi HTTPS"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -NoExit -File ""{app}\scripts\configure-wifi.ps1"""; WorkingDir: "{app}"
-Name: "{autoprograms}\LAN Cam OBS - Encerrar servidor"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\stop-installed.ps1"""; WorkingDir: "{app}"
-Name: "{autodesktop}\LAN Cam OBS"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\launch-installed.ps1"""; WorkingDir: "{app}"; Tasks: desktopicon
+Name: "{autoprograms}\LAN Cam OBS"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\launch-installed.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\lan-cam.ico"
+Name: "{autoprograms}\LAN Cam OBS - Configurar Wi-Fi HTTPS"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -NoExit -File ""{app}\scripts\configure-wifi.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\lan-cam.ico"
+Name: "{autoprograms}\LAN Cam OBS - Encerrar servidor"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\stop-installed.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\lan-cam.ico"
+Name: "{autodesktop}\LAN Cam OBS"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\launch-installed.ps1"""; WorkingDir: "{app}"; Tasks: desktopicon; IconFilename: "{app}\assets\lan-cam.ico"
+Name: "{autoprograms}\LAN Cam OBS - Instalar webcam virtual"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\scripts\install-webcam-driver.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\assets\lan-cam.ico"
+Name: "{autoprograms}\LAN Cam OBS - Remover webcam virtual"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\scripts\install-webcam-driver.ps1"" -Remove"; WorkingDir: "{app}"; IconFilename: "{app}\assets\lan-cam.ico"
 
 [Run]
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\launch-installed.ps1"""; Description: "Abrir LAN Cam OBS"; Flags: nowait postinstall skipifsilent
