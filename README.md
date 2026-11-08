@@ -1,8 +1,21 @@
 # LAN Cam OBS
 
+## v0.3.0 — duas saídas no mesmo aplicativo
+
+O LAN Cam OBS oferece agora dois modos no painel local, em **http://localhost:8787**:
+
+- **Fonte para OBS:** mantém a fonte de navegador com WebRTC/JPEG da versão anterior.
+- **Webcam para Google Meet, Zoom e Microsoft Teams:** ativa uma ponte local via JPEG e um filtro de captura DirectShow. **Não é preciso abrir o OBS.** No aplicativo de reunião, selecione **LAN Cam Webcam** no menu de câmeras.
+
+**Antes de usar a webcam no Windows:** instale o programa, abra o atalho **LAN Cam OBS - Instalar webcam virtual** e aprove a elevação UAC uma única vez. A operação registra um componente externo MIT da biblioteca UnityCapture, cuja versão é fixada e verificada na compilação. O registro não é automático para não modificar o sistema sem consentimento. O filtro compartilhado pode ser removido pelo atalho específico antes de desinstalar o aplicativo.
+
+A câmera do celular pode continuar usando WebRTC para OBS enquanto envia quadros JPEG em paralelo para a webcam virtual, somente quando ela está ligada. Isso aumenta uso de CPU e rede, especialmente em 1080p; comece com 720p. O microfone deve ser selecionado separadamente no Meet/Zoom/Teams.
+
+**Limitação importante:** a ponte foi integrada e os arquivos são verificáveis no repositório, mas a compatibilidade real do filtro de câmera depende do Windows e das versões dos aplicativos. Teste em um PC de destino antes de anunciar uma versão estável. Consulte [INSTALLER.md](INSTALLER.md) e [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
 ## Instalador Windows (.exe)
 
-A versao **0.2.0** inclui um build de instalador com **Node.js embutido** (nao e necessario instalar Node no computador que recebe o programa). No Windows x64, execute `build.bat` ou, no Git Bash do Windows, `bash build.sh`. O instalador gerado ficara em `dist/LAN-Cam-OBS-Setup-0.2.0-win-x64.exe`. A primeira compilacao usa Inno Setup e baixa o Node.js oficial com verificacao SHA-256. Consulte [INSTALLER.md](INSTALLER.md) para instalacao, uso e observacoes sobre HTTPS, atualizacao e desinstalacao.
+A versao **0.3.0** inclui um build de instalador com **Node.js embutido** (nao e necessario instalar Node no computador que recebe o programa). No Windows x64, execute `build.bat` ou, no Git Bash do Windows, `bash build.sh`. O instalador gerado ficara em `dist/LAN-Cam-OBS-Setup-0.3.0-win-x64.exe`. A primeira compilacao usa Inno Setup e baixa o Node.js oficial com verificacao SHA-256. Consulte [INSTALLER.md](INSTALLER.md) para instalacao, uso e observacoes sobre HTTPS, atualizacao e desinstalacao.
 
 O instalador cria atalhos para abrir o painel, configurar HTTPS e encerrar o servidor. **HTTPS no celular ainda exige confiar manualmente na CA local**; esta acao nao e automatizada por motivos de seguranca.
 
