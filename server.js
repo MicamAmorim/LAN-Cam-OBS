@@ -64,18 +64,32 @@ function startWebcam() {
   if (webcamActive()) return { ok: true, ...webcamInfo() };
   if (process.platform !== 'win32') return { ok: false, error: 'Webcam virtual disponível apenas no Windows.' };
   if (!fs.existsSync(webcamBridgeScript)) return { ok: false, error: 'Ponte da webcam ausente. Reinstale.' };
-  webcamProcess = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy',
-    'Bypass', '-File', webcamBridgeScript], { cwd: ROOT, windowsHide: true, stdio: 'ignore',
+  const local = path.join(ROOT, '.local');
+  fs.mkdirSync(local, { recursive: true });
+  const logfile = path.join(local, 'webcam-bridge.log');
+  const logfd = fs.openSync(logfile, 'a');
+  const child = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-ExecutionPolicy',
+    'Bypass', '-File', webcamBridgeScript], { cwd: ROOT, windowsHide: true,
+    stdio: ['ignore', logfd, logfd],
     env: { ...process.env, LAN_CAM_PORT: String(HTTP_PORT), LAN_CAM_KEY: accessKey } });
-  webcamProcess.on('error', err => console.error('Webcam bridge:', err.message));
-  webcamProcess.on('exit', () => {
-    webcamProcess = null;
+  fs.closeSync(logfd);
+  webcamProcess = child;
+  child.on('error', err => console.error('Webcam bridge:', err.message));
+  child.on('exit', (code, signal) => {
+    if (webcamProcess === child) {
+      webcamProcess = null;
+      if (code && code !== 0) console.error('Ponte da webcam saiu com código', code, '- confira', logfile);
+    }
     if (webcamClient) webcamClient.close(1001, 'Ponte encerrada');
   });
   return { ok: true, ...webcamInfo() };
 }
 function stopWebcam() {
-  if (webcamProcess) { webcamProcess.kill(); webcamProcess = null; }
+  if (webcamProcess) {
+    const old = webcamProcess;
+    webcamProcess = null;
+    old.kill();
+  }
   if (webcamClient) webcamClient.close(1001, 'Webcam desligada');
   return { ok: true, ...webcamInfo() };
 }
