@@ -106,6 +106,7 @@ public static class LanCamWebcamBridge
     {
         if (String.IsNullOrWhiteSpace(port) || String.IsNullOrWhiteSpace(key)) return;
         var uri = new Uri("ws://127.0.0.1:" + port + "/signal?role=webcam&key=" + Uri.EscapeDataString(key));
+        int failures = 0;
         while (true)
         {
             try
@@ -113,6 +114,7 @@ public static class LanCamWebcamBridge
                 using (var socket = new ClientWebSocket())
                 {
                     socket.ConnectAsync(uri, CancellationToken.None).GetAwaiter().GetResult();
+                    failures = 0;
                     byte[] buf = new byte[MaxFrameBytes];
                     using (var data = new MemoryStream())
                     {
@@ -139,8 +141,9 @@ public static class LanCamWebcamBridge
             catch (Exception e)
             {
                 Console.Error.WriteLine("Webcam bridge: " + e.Message);
-                Thread.Sleep(1200);
                 Detach();
+                if (++failures >= 8) return; // evita ponte órfã após servidor desligado
+                Thread.Sleep(1200);
             }
         }
     }
