@@ -119,3 +119,21 @@ test('gerador QR local codifica o link HTTPS com chave de acesso', () => {
   assert.equal(qr.isDark(0, 0), true, 'marcador de posicao presente');
   assert.equal(qr.isDark(0, 6), true, 'marcador de posicao presente');
 });
+
+test('controle da webcam exige acesso local e cabecalho de protecao', async () => {
+  const info = await (await fetch(base + '/api/status')).json();
+  assert.equal(typeof info.webcam.supported, 'boolean');
+  assert.equal(info.webcam.deviceName, 'LAN Cam Webcam');
+  const notPost = await fetch(base + '/api/webcam/start');
+  assert.equal(notPost.status, 405);
+  const csrf = await fetch(base + '/api/webcam/start', { method: 'POST' });
+  assert.equal(csrf.status, 403, 'sites externos nao podem ativar a webcam por requisicao simples');
+  const fakeOrigin = await fetch(base + '/api/webcam/start', {
+    method: 'POST',
+    headers: { 'X-LAN-CAM': 'dashboard', Origin: 'https://example.net' }
+  });
+  assert.equal(fakeOrigin.status, 403);
+  const dashboard = await (await fetch(base + '/')).text();
+  assert.match(dashboard, /id="webcamStart"/);
+  assert.match(dashboard, /id="selectWebcam"/);
+});
