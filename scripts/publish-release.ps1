@@ -21,8 +21,11 @@ if ($dirty.Count -gt 0) { throw 'Existem arquivos alterados no Git. Commit ou gu
 if ($LASTEXITCODE -ne 0) { throw 'git pull falhou.' }
 $version = (Get-Content -LiteralPath (Join-Path $Root 'package.json') -Raw | ConvertFrom-Json).version
 $tag = if ($Stable) { "v$version" } else { "v$version-rc.1" }
-& gh release view $tag --repo $Repository 1>$null 2>$null
-if ($LASTEXITCODE -eq 0) { throw "Release $tag ja existe. Nao sera sobrescrita automaticamente." }
+# Primeira publicacao: release ausente e esperado. Listar releases retorna 200
+# mesmo quando nao ha nenhuma, evitando erro fatal em PowerShell 5.1.
+$publishedTags = @(& gh api "repos/$Repository/releases" --paginate --jq '.[].tag_name')
+if ($LASTEXITCODE -ne 0) { throw 'Nao foi possivel consultar as releases no GitHub.' }
+if ($publishedTags -contains $tag) { throw "Release $tag ja existe. Nao sera sobrescrita automaticamente." }
 Write-Host "Buildando $version para $Branch..." -ForegroundColor Cyan
 & (Join-Path $Root 'scripts\build-installer.ps1')
 if (-not $?) { throw 'Build do instalador falhou.' }
