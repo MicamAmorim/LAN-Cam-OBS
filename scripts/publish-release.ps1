@@ -1,7 +1,7 @@
 # Build local + publicacao verificavel no GitHub Releases.
 # Por padrao publica v0.3.0-rc.1 como pre-release: ainda exige teste de hardware.
 [CmdletBinding()]
-param([switch]$Stable)
+param([switch]$Stable, [ValidateRange(1,99)][int]$Candidate = 1)
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $Repository = 'MicamAmorim/LAN-Cam-OBS'
@@ -20,7 +20,7 @@ if ($dirty.Count -gt 0) { throw 'Existem arquivos alterados no Git. Commit ou gu
 & git pull --ff-only origin $Branch
 if ($LASTEXITCODE -ne 0) { throw 'git pull falhou.' }
 $version = (Get-Content -LiteralPath (Join-Path $Root 'package.json') -Raw | ConvertFrom-Json).version
-$tag = if ($Stable) { "v$version" } else { "v$version-rc.1" }
+$tag = if ($Stable) { "v$version" } else { "v$version-rc.$Candidate" }
 # Primeira publicacao: release ausente e esperado. Listar releases retorna 200
 # mesmo quando nao ha nenhuma, evitando erro fatal em PowerShell 5.1.
 $publishedTags = @(& gh api "repos/$Repository/releases" --paginate --jq '.[].tag_name')
