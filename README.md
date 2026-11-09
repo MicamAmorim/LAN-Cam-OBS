@@ -2,9 +2,9 @@
 
 Use o celular como fonte de navegador para OBS pela rede local e teste a saída de webcam virtual DirectShow no Windows. O painel roda no próprio PC, sem serviço de nuvem.
 
-**Versão atual: 0.4.2 · pré-release v0.4.2-rc.1.** [Baixar o instalador Windows x64](https://github.com/MicamAmorim/LAN-Cam-OBS/releases/tag/v0.4.2-rc.1) · [Instalação e diagnóstico](INSTALLER.md) · [Notas da versão](docs/releases/0.4.2.md).
+**Versão atual: 0.4.2 · release estável v0.4.2.** [Baixar o instalador Windows x64](https://github.com/MicamAmorim/LAN-Cam-OBS/releases/tag/v0.4.2) · [Instalação e diagnóstico](INSTALLER.md) · [Notas da versão](docs/releases/0.4.2.md).
 
-**Pendência conhecida:** o Windows/DirectShow lista “LAN Cam Webcam”, mas a câmera ainda não apareceu no Google Meet pelo Edge na máquina de teste. A causa permanece em investigação. O registro e uma captura DirectShow bem-sucedidos não comprovam compatibilidade com Meet, Zoom ou Teams. Esta versão é distribuída para testes.
+**Meet/Edge validado pelo usuário:** “LAN Cam Webcam” apareceu na lista do Google Meet após fechar e reabrir o Edge. Depois de registrar a câmera, reinicie completamente o navegador se a lista ainda estiver desatualizada. Essa confirmação se refere ao cenário testado; Zoom e Teams não foram validados nesta sessão.
 
 ## Instalar e usar
 
@@ -12,7 +12,7 @@ Use o celular como fonte de navegador para OBS pela rede local e teste a saída 
 2. Abra o único atalho **LAN Cam OBS** no menu Iniciar.
 3. Em **Configuração**, veja o estado do driver e do HTTPS, clique em **Configurar tudo** ou prepare cada recurso separadamente. Aceite as solicitações do Windows quando concordar com as alterações.
 4. Para Wi-Fi, instale manualmente a CA pública no celular. Em **LAN Cam**, escaneie o QR Code e inicie a câmera no endereço HTTPS.
-5. Para o OBS, copie a URL de fonte de navegador exibida em **LAN Cam**. Para testar a webcam, ative a ponte e procure **LAN Cam Webcam** no aplicativo de destino, considerando a pendência acima.
+5. Para o OBS, copie a URL de fonte de navegador exibida em **LAN Cam**. Para testar a webcam, ative a ponte e procure **LAN Cam Webcam** no aplicativo de destino, reiniciando o navegador se a câmera ainda não aparecer.
 
 Em **Sistema**, ligue ou desligue as transmissões. O painel permanece disponível para religar; fechar a aba não encerra o servidor. O microfone é selecionado separadamente no OBS ou aplicativo de reunião.
 
@@ -22,7 +22,7 @@ Em **Sistema**, ligue ou desligue as transmissões. O painel permanece disponív
 - **0.4.1:** atualização libera o runtime mesmo sem PID válido; preserva DLLs idênticas em uso; HTTPS executa o binário real do mkcert instalado pelo WinGet; detalhes dos erros aparecem no painel.
 - **0.4.2:** o script aguarda o regsvr32 e verifica o código real do processo, corrigindo o falso erro com código vazio. Novos testes cobrem executáveis gráficos com sucesso e falha.
 
-O registro corrigido retornou código 0 e a ponte transmitiu uma imagem de teste DirectShow em 1280×720. Os testes automatizados cobrem sinalização/JPEG, QR, controles locais e regressões Windows. A validação do Meet/Edge permanece pendente.
+O registro corrigido retornou código 0 e a ponte transmitiu uma imagem de teste DirectShow em 1280×720. Os testes automatizados cobrem sinalização/JPEG, QR, controles locais e regressões Windows. O usuário confirmou a câmera na lista do Meet/Edge após reiniciar o navegador.
 
 ## Build e publicação
 

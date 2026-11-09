@@ -1,10 +1,10 @@
 # Instalação e configuração — 0.4.2
 
-Para usar o programa no Windows x64, prefira o [instalador da pré-release v0.4.2-rc.1](https://github.com/MicamAmorim/LAN-Cam-OBS/releases/tag/v0.4.2-rc.1). Ele inclui Node.js e cria um único atalho **LAN Cam OBS**. Abra **Configuração** no painel para preparar Wi-Fi e webcam; abra **LAN Cam** para o QR Code e links do OBS. O certificado público no celular continua sendo uma etapa manual.
+Para usar o programa no Windows x64, prefira o [instalador da release estável v0.4.2](https://github.com/MicamAmorim/LAN-Cam-OBS/releases/tag/v0.4.2). Ele inclui Node.js e cria um único atalho **LAN Cam OBS**. Abra **Configuração** no painel para preparar Wi-Fi e webcam; abra **LAN Cam** para o QR Code e links do OBS. O certificado público no celular continua sendo uma etapa manual.
 
 As correções de 0.4.1/0.4.2 evitam sobrescrever DLLs idênticas em uso, resolvem o executável real do mkcert e aguardam o regsvr32 com código de saída verificável. Veja [INSTALLER.md](INSTALLER.md) para diagnóstico e atualização.
 
-**Limitação conhecida:** a câmera está registrada e listada no DirectShow, mas sua presença na lista do Meet/Edge ainda não foi confirmada. A pré-release não garante essa compatibilidade; [notas da versão](docs/releases/0.4.2.md).
+**Meet/Edge:** o usuário confirmou que a câmera apareceu após fechar e reabrir o Edge. Reinicie completamente o navegador depois de registrar o driver se a lista estiver desatualizada. Veja as [notas da versão](docs/releases/0.4.2.md).
 
 Os procedimentos abaixo são para executar o repositório diretamente. Eles não são necessários para quem usa o instalador `.exe`.
 

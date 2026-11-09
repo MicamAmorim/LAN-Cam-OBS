@@ -4,12 +4,12 @@ O instalador inclui Node.js e a interface local. Não requer Node.js pré-instal
 
 ## Baixar e instalar
 
-1. Abra a [release v0.4.2-rc.1](https://github.com/MicamAmorim/LAN-Cam-OBS/releases/tag/v0.4.2-rc.1) e baixe `LAN-Cam-OBS-Setup-0.4.2-win-x64.exe`.
+1. Abra a [release estável v0.4.2](https://github.com/MicamAmorim/LAN-Cam-OBS/releases/tag/v0.4.2) e baixe `LAN-Cam-OBS-Setup-0.4.2-win-x64.exe`.
 2. Conclua o assistente e abra **LAN Cam OBS** no menu Iniciar.
 3. Em **Configuração**, instale/repare a webcam e configure o Wi-Fi, ou use **Configurar tudo**. Aceite as solicitações do Windows quando concordar com as alterações.
 4. No celular, instale manualmente a CA pública indicada no painel, apenas em um aparelho sob seu controle.
 5. Em **LAN Cam**, escaneie o QR Code, abra o endereço HTTPS e inicie a câmera no celular. Copie a URL de fonte de navegador para o OBS.
-6. Para testar a saída de webcam, ative **Webcam** e procure **LAN Cam Webcam** no aplicativo de destino. A compatibilidade com Meet/Edge ainda está pendente; veja a seção abaixo.
+6. Para testar a saída de webcam, ative **Webcam** e procure **LAN Cam Webcam** no aplicativo de destino. O usuário confirmou a câmera na lista do Meet/Edge após reiniciar o navegador; veja a seção abaixo.
 
 **Sistema → Desligar sistema** interrompe transmissões e a ponte da webcam. O painel continua disponível para religar. Fechar a aba do painel não encerra o servidor.
 
@@ -42,7 +42,7 @@ A desinstalação em **Configurações do Windows → Aplicativos** remove os da
 | mkcert: nenhum aplicativo associado | A versão 0.4.1+ resolve o binário real do WinGet, em vez de executar seu link simbólico. |
 | regsvr32 falhou com código vazio | Corrigido em 0.4.2: o script aguarda o processo e lê seu `ExitCode`. Um erro numérico diferente de zero ainda deve ser investigado. |
 | HTTPS ativo, mas celular não conecta | Confira confiança na CA, endereço IP, mesma rede e permissões de câmera. Se o IP mudou, use **Configurar / atualizar Wi-Fi**. |
-| Webcam registrada, mas ausente no Meet/Edge | **Pendência conhecida desta pré-release.** Encerre completamente o navegador quando puder sair da reunião e teste novamente. A causa ainda não foi confirmada. Registro e captura DirectShow não garantem enumeração no navegador. |
+| Webcam registrada, mas ausente no Meet/Edge | O usuário confirmou que a câmera apareceu após fechar e reabrir o Edge. Encerre todas as janelas e processos do navegador quando puder sair da reunião e abra-o novamente para atualizar a lista de câmeras. |
 
 Consulte os detalhes no painel e `.local/configuration.log`. A ponte grava em `.local/webcam-bridge.log`. Não publique chaves de acesso nem certificados privados ao compartilhar um diagnóstico.
 
@@ -72,7 +72,7 @@ Com Git e GitHub CLI autenticados, branch sincronizada e árvore limpa:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-release.ps1
 ```
 
-O script lê a versão de `package.json`, usa as notas em `docs/releases/<versão>.md`, recompila com os testes, gera `.sha256` e publica `v<versão>-rc.1` como pré-release. Uma release existente não é sobrescrita. Para outro candidato, use `-Candidate 2`. O parâmetro `-Stable` publica `v<versão>` e deve ser usado somente depois de validar as pendências de compatibilidade.
+O script lê a versão de `package.json`, usa as notas em `docs/releases/<versão>.md`, recompila com os testes, gera `.sha256` e publica `v<versão>-rc.1` como pré-release. Uma release existente não é sobrescrita. Para outro candidato, use `-Candidate 2`. O parâmetro `-Stable` publica `v<versão>`. A release estável atual é `v0.4.2`; `v0.4.2-rc.1` permanece no histórico como pré-release.
 
 ## Limites
 
