@@ -5,7 +5,7 @@ $Server = Join-Path $Root 'server.js'
 $Node = Join-Path $Root 'runtime\node.exe'
 $Local = Join-Path $Root '.local'
 $PidFile = Join-Path $Local 'server.pid'
-$Url = 'http://localhost:8787'
+$Url = 'http://127.0.0.1:8787'
 New-Item -ItemType Directory -Force -Path $Local | Out-Null
 
 function Is-Ours([int]$ProcessId) {
@@ -30,7 +30,17 @@ $ready = $false
 for ($n = 0; $n -lt 40; $n++) {
     try {
         $response = Invoke-WebRequest -Uri "$Url/api/config" -UseBasicParsing -TimeoutSec 2
-        if ($response.StatusCode -eq 200) { $ready = $true; break }
+        if ($response.StatusCode -eq 200) {
+            $status = Invoke-RestMethod -Uri "$Url/api/status" -TimeoutSec 2
+            if ($null -eq $status.webcam) {
+                Add-Type -AssemblyName System.Windows.Forms
+                [void][System.Windows.Forms.MessageBox]::Show(
+                    'A porta 8787 responde, mas o servidor parece ser uma versao antiga do LAN Cam OBS. Encerre o processo antigo e inicie novamente a versao instalada.',
+                    'LAN Cam OBS - Servidor antigo detectado')
+                exit 1
+            }
+            $ready = $true; break
+        }
     } catch {}
     Start-Sleep -Milliseconds 250
 }
@@ -39,6 +49,6 @@ if ($ready) {
 } else {
     Add-Type -AssemblyName System.Windows.Forms
     [void][System.Windows.Forms.MessageBox]::Show(
-        'O servidor nao iniciou em http://localhost:8787. Verifique se a porta 8787 esta livre ou se outra copia do aplicativo esta em execucao.',
+        'O servidor nao iniciou em http://127.0.0.1:8787. Verifique se a porta 8787 esta livre ou se outra copia do aplicativo esta em execucao.',
         'LAN Cam OBS')
 }
