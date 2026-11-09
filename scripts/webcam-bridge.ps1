@@ -19,6 +19,10 @@ public static class LanCamWebcamBridge
     static MemoryMappedViewAccessor accessor;
     static Mutex mutex;
     static EventWaitHandle sent;
+    // UnityCapture opens this event before it creates Sent and Data. Keep it
+    // alive even while no application has opened the virtual camera yet.
+    static readonly EventWaitHandle want = new EventWaitHandle(false,
+        EventResetMode.AutoReset, "UnityCapture_Want");
 
     static bool Attach()
     {
@@ -92,6 +96,7 @@ public static class LanCamWebcamBridge
                     }
                     finally { if (locked) mutex.ReleaseMutex(); }
                     sent.Set();
+                    want.WaitOne(0); // consume the receiver's request, as the native sender does
                 }
             }
         }

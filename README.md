@@ -1,3 +1,9 @@
+## Versão 0.4.0 — aplicativo unificado
+
+Abra **LAN Cam OBS** no menu Iniciar. Em **Sistema**, ligue ou desligue as transmissões (o painel permanece disponível). Em **Configuração**, consulte o estado do driver e do HTTPS, instale/repare a webcam ou configure tudo. Em **LAN Cam**, encontre o QR Code do celular, os links do OBS e os controles da webcam.
+
+A configuração do Wi-Fi ativa o HTTPS sem reiniciar o painel. Aceite as solicitações do Windows e instale o certificado público manualmente no celular. A atualização remove os atalhos auxiliares antigos. A ponte da webcam agora cria o evento de sincronização exigido pelo UnityCapture.
+
 # LAN Cam OBS
 
 ## v0.3.0 — duas saídas no mesmo aplicativo
@@ -7,7 +13,7 @@ O LAN Cam OBS oferece agora dois modos no painel local, em **http://localhost:87
 - **Fonte para OBS:** mantém a fonte de navegador com WebRTC/JPEG da versão anterior.
 - **Webcam para Google Meet, Zoom e Microsoft Teams:** ativa uma ponte local via JPEG e um filtro de captura DirectShow. **Não é preciso abrir o OBS.** No aplicativo de reunião, selecione **LAN Cam Webcam** no menu de câmeras.
 
-**Antes de usar a webcam no Windows:** instale o programa, abra o atalho **LAN Cam OBS - Instalar webcam virtual** e aprove a elevação UAC uma única vez. A operação registra um componente externo MIT da biblioteca UnityCapture, cuja versão é fixada e verificada na compilação. O registro não é automático para não modificar o sistema sem consentimento. O filtro compartilhado pode ser removido pelo atalho específico antes de desinstalar o aplicativo.
+**Antes de usar a webcam no Windows:** instale o programa, abra **Configuração → Instalar / reparar webcam** no painel LAN Cam OBS e aprove a elevação UAC uma única vez. A operação registra um componente externo MIT da biblioteca UnityCapture, cuja versão é fixada e verificada na compilação. O registro não é automático para não modificar o sistema sem consentimento. O filtro compartilhado pode ser removido em Configuração → Remover driver da webcam antes de desinstalar o aplicativo.
 
 A câmera do celular pode continuar usando WebRTC para OBS enquanto envia quadros JPEG em paralelo para a webcam virtual, somente quando ela está ligada. Isso aumenta uso de CPU e rede, especialmente em 1080p; comece com 720p. O microfone deve ser selecionado separadamente no Meet/Zoom/Teams.
 
@@ -15,9 +21,9 @@ A câmera do celular pode continuar usando WebRTC para OBS enquanto envia quadro
 
 ## Instalador Windows (.exe)
 
-A versao **0.3.0** inclui um build de instalador com **Node.js embutido** (nao e necessario instalar Node no computador que recebe o programa). No Windows x64, execute `build.bat` ou, no Git Bash do Windows, `bash build.sh`. O instalador gerado ficara em `dist/LAN-Cam-OBS-Setup-0.3.0-win-x64.exe`. A primeira compilacao usa Inno Setup e baixa o Node.js oficial com verificacao SHA-256. Consulte [INSTALLER.md](INSTALLER.md) para instalacao, uso e observacoes sobre HTTPS, atualizacao e desinstalacao.
+A versao **0.4.0** inclui um build de instalador com **Node.js embutido** (nao e necessario instalar Node no computador que recebe o programa). No Windows x64, execute `build.bat` ou, no Git Bash do Windows, `bash build.sh`. O instalador gerado ficara em `dist/LAN-Cam-OBS-Setup-0.4.0-win-x64.exe`. A primeira compilacao usa Inno Setup e baixa o Node.js oficial com verificacao SHA-256. Consulte [INSTALLER.md](INSTALLER.md) para instalacao, uso e observacoes sobre HTTPS, atualizacao e desinstalacao.
 
-O instalador cria atalhos para abrir o painel, configurar HTTPS e encerrar o servidor. **HTTPS no celular ainda exige confiar manualmente na CA local**; esta acao nao e automatizada por motivos de seguranca.
+O instalador cria um único atalho LAN Cam OBS, com controles de sistema e configuração no painel. **HTTPS no celular ainda exige confiar manualmente na CA local**; esta acao nao e automatizada por motivos de seguranca.
 
 
 ## Instalação rápida (Windows)
@@ -146,3 +152,4 @@ scripts/usb-android.ps1    Ponte USB com ADB
 - [Microsoft: câmera conectada](https://support.microsoft.com/pt-br/windows/apps/phonelink/use-your-mobile-device-s-camera)
 
 > **Sem dependências npm:** o servidor inclui um WebSocket pequeno em `lib/ws-lite.js`. Basta o Node.js e `npm start`; não há downloads de pacotes na primeira execução.
+

@@ -1,6 +1,31 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LAN Cam OBS · Painel</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/app.css"></head><body><main>
   <div class="brand-hero"><img class="brand-logo" src="/favicon.svg" alt="Ícone LAN Cam"><div><div class="eyebrow">Local-first · sem nuvem</div><h1>LAN Cam <span style="color:#5adbcf">OBS</span></h1></div></div>
   <p>Transforme seu celular em uma câmera para OBS ou em webcam virtual para Google Meet, Zoom e Teams. Tudo na rede local, sem nuvem.</p>
+  <nav class="mode-tabs app-navigation" aria-label="Navegação principal">
+    <button type="button" data-screen="system" aria-pressed="true" class="mode-tab selected">Sistema</button>
+    <button type="button" data-screen="settings" aria-pressed="false" class="mode-tab">Configuração</button>
+    <button type="button" data-screen="camera" aria-pressed="false" class="mode-tab">LAN Cam</button>
+  </nav>
+  <section id="screen-system" class="panel app-screen">
+    <div class="eyebrow">Controle do aplicativo · v0.4.0</div><h2>Seu estúdio local</h2>
+    <p id="systemStatus" role="status" aria-live="polite">Verificando sistema…</p>
+    <div class="actions"><button id="systemStart" type="button">Ligar sistema</button><button id="systemStop" type="button" class="secondary">Desligar sistema</button></div>
+    <p class="footnote">Desligar interrompe o vídeo para OBS e aplicativos de reunião. O painel permanece aberto para você configurar e religar o sistema. Fechar esta janela mantém o sistema no estado atual.</p>
+    <p id="systemMessage" role="status"></p>
+  </section>
+  <section id="screen-settings" class="panel app-screen hidden">
+    <div class="eyebrow">Preparação guiada</div><h2>Configure uma vez, use quando quiser</h2>
+    <p>O aplicativo verifica o que já está preparado neste computador. Clique para configurar e aceite as solicitações do Windows.</p>
+    <div class="grid">
+      <article><h3>Webcam virtual</h3><p id="driverSetupStatus">Verificando driver…</p><button type="button" data-setup="driver">Instalar / reparar webcam</button></article>
+      <article><h3>Wi-Fi com HTTPS</h3><p id="wifiSetupStatus">Verificando HTTPS…</p><button type="button" data-setup="wifi">Configurar / atualizar Wi-Fi</button></article>
+    </div>
+    <div class="actions"><button type="button" data-setup="all">Configurar tudo</button><button type="button" data-setup="remove" class="secondary">Remover driver da webcam</button></div>
+    <p id="setupMessage" class="hint" role="status" aria-live="polite">As configurações só são alteradas quando você clica em um botão.</p>
+    <p>Depois de preparar o Wi-Fi, abra a área LAN Cam para baixar o certificado público no celular e instalá-lo como autoridade confiável. Essa etapa precisa ser feita no próprio aparelho.</p>
+    <p class="footnote">O HTTPS cria uma autoridade certificadora local e pode instalar o mkcert pela Internet. O driver solicita autorização de administrador. Se o Windows perguntar sobre acesso à rede, permita na sua rede privada.</p>
+  </section>
+  <div id="screen-camera" class="app-screen hidden">
   <div class="statusline"><span id="status" class="pill offline">Aguardando câmera</span><span id="count" class="muted">0 visualizadores</span></div>
 
   <section class="panel output-panel" aria-labelledby="output-heading">
@@ -11,7 +36,7 @@
     </div>
     <div id="obsSummary"><p>Copie a URL do OBS na seção abaixo. Funciona com a fonte de navegador sem alterar o fluxo atual.</p></div>
     <div id="webcamSummary" class="hidden">
-      <p>Use <strong>LAN Cam Webcam</strong> como câmera no Google Meet, Zoom ou Teams, sem abrir o OBS. Antes do primeiro uso, instale o driver virtual pelo atalho <strong>LAN Cam OBS - Instalar webcam virtual</strong> no menu Iniciar; o Windows pedirá autorização.</p>
+      <p>Use <strong>LAN Cam Webcam</strong> como câmera no Google Meet, Zoom ou Teams, sem abrir o OBS. Antes do primeiro uso, abra a área <strong>Configuração</strong> e instale a webcam virtual; o Windows pedirá autorização.</p>
       <div class="actions"><button id="webcamStart" type="button">Ativar webcam</button><button id="webcamStop" class="secondary" type="button" disabled>Desativar webcam</button></div>
       <p id="webcamStatus" class="hint" role="status" aria-live="polite">Webcam desativada.</p>
       <p class="footnote">Com a webcam ativa, o celular também envia JPEG local para o dispositivo virtual. O microfone é configurado separadamente no aplicativo de reunião.</p>
@@ -23,6 +48,6 @@
     <section class="panel"><h2>3. Visualização na rede</h2><p>Compartilhe este link com dispositivos da sua rede local. O vídeo é enviado a cada visualizador conectado.</p><a id="viewLink" class="url" href="#">Configurando...</a><div class="actions"><button data-copy="viewLink">Copiar link</button></div><p class="footnote">Cada espectador adicional consome banda do celular; para melhor desempenho, use poucos visualizadores simultâneos.</p></section>
     <section class="panel"><h2>Alternativa USB · Android</h2><p>Se você tiver ADB e depuração USB, execute <span class="mono">adb reverse tcp:8787 tcp:8787</span>. No celular, abra a URL abaixo: a transmissão usará JPEG pela conexão USB, sem certificado HTTPS.</p><a id="usbLink" class="url" href="#">Configurando...</a><div class="actions"><button data-copy="usbLink">Copiar endereço USB</button></div><p class="footnote">O USB via ADB é opcional. Se o Android tiver modo nativo “Webcam USB”, ele costuma ser ainda mais simples.</p></section>
   </div>
-  <section class="panel"><h2>Preparação do HTTPS para Wi-Fi</h2><p>Instale o <b>mkcert</b>, execute <span class="mono">.\scripts\setup-https.ps1</span> no PowerShell e reinicie o servidor. No celular, baixe o certificado raiz público e instale-o como autoridade confiável <b>apenas no aparelho que você controla</b>.</p><p>Certificado para instalar no celular: <a id="certLink" href="#">Abrir certificado</a>. A chave privada de certificação nunca deve ser compartilhada.</p><p class="footnote">Painel de gerenciamento disponível apenas no PC. Para impedir que outras pessoas na rede assistam, não compartilhe URLs com a chave de acesso.</p></section>
+  <section class="panel"><h2>Preparação do HTTPS para Wi-Fi</h2><p>Abra a área <b>Configuração</b> e clique em <b>Configurar Wi-Fi</b>. O HTTPS será ativado automaticamente ao terminar. No celular, baixe o certificado raiz público e instale-o como autoridade confiável <b>apenas no aparelho que você controla</b>.</p><p>Certificado para instalar no celular: <a id="certLink" href="#">Abrir certificado</a>. A chave privada de certificação nunca deve ser compartilhada.</p><p class="footnote">Painel de gerenciamento disponível apenas no PC. Para impedir que outras pessoas na rede assistam, não compartilhe URLs com a chave de acesso.</p></section>
   <p class="footnote">O fluxo de vídeo não sai da sua rede por este aplicativo. Sem gravação e sem envio para serviços externos.</p>
-</main><script src="/vendor/qrcode.js" defer></script><script src="/dashboard.js" defer></script></body></html>
+</div></main><script src="/vendor/qrcode.js" defer></script><script src="/dashboard.js" defer></script></body></html>

@@ -93,7 +93,7 @@ foreach ($dir in @('lib','public')) {
 }
 New-Item -ItemType Directory -Force -Path (Join-Path $Stage 'runtime'), (Join-Path $Stage 'scripts') | Out-Null
 Copy-Item -LiteralPath $NodeBinary -Destination (Join-Path $Stage 'runtime\node.exe') -Force
-foreach ($file in @('setup-https.ps1','usb-android.ps1','launch-installed.ps1','stop-installed.ps1','configure-wifi.ps1','webcam-bridge.ps1','install-webcam-driver.ps1')) {
+foreach ($file in @('setup-https.ps1','usb-android.ps1','launch-installed.ps1','stop-installed.ps1','configure-wifi.ps1','configure-all.ps1','webcam-bridge.ps1','install-webcam-driver.ps1')) {
     Copy-Item -LiteralPath (Join-Path $Root "scripts\$file") -Destination (Join-Path $Stage 'scripts') -Force
 }
 
@@ -136,7 +136,7 @@ Write-Host 'Driver UnityCapture verificado (MIT).' -ForegroundColor Green
 
 if (-not $SkipTests) {
     Write-Host 'Verificando sintaxe PowerShell, JavaScript e testes automatizados...'
-    foreach ($item in @('build-installer.ps1','setup-https.ps1','usb-android.ps1','launch-installed.ps1','stop-installed.ps1','configure-wifi.ps1','webcam-bridge.ps1','install-webcam-driver.ps1','generate-app-icon.ps1')) {
+    foreach ($item in @('build-installer.ps1','setup-https.ps1','usb-android.ps1','launch-installed.ps1','stop-installed.ps1','configure-wifi.ps1','configure-all.ps1','webcam-bridge.ps1','install-webcam-driver.ps1','generate-app-icon.ps1')) {
         $scriptPath = Join-Path $Root "scripts\$item"
         $tokens = $null
         $parseErrors = $null

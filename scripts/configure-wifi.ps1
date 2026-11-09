@@ -1,4 +1,5 @@
 # Configuracao opt-in de HTTPS. Pode solicitar elevacao para instalar CA no Windows.
+param([switch]$NoRestart)
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Write-Host ''
@@ -28,9 +29,11 @@ if (-not (Get-Command mkcert -ErrorAction SilentlyContinue)) {
 }
 & (Join-Path $Root 'scripts\setup-https.ps1')
 if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw 'Falha ao configurar HTTPS.' }
-Write-Host 'Reiniciando o servidor local...' -ForegroundColor Cyan
-& (Join-Path $Root 'scripts\stop-installed.ps1')
-& (Join-Path $Root 'scripts\launch-installed.ps1')
+if (-not $NoRestart) {
+    Write-Host 'Reiniciando o servidor local...' -ForegroundColor Cyan
+    & (Join-Path $Root 'scripts\stop-installed.ps1')
+    & (Join-Path $Root 'scripts\launch-installed.ps1')
+}
 Write-Host ''
 Write-Host 'Pronto. Copie o link HTTPS da camera no painel do computador.' -ForegroundColor Green
 Write-Host 'A CA publica pode ser baixada na rede local em http://IP-DO-PC:8787/local-ca.crt'

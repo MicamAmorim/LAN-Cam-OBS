@@ -137,3 +137,25 @@ test('controle da webcam exige acesso local e cabecalho de protecao', async () =
   assert.match(dashboard, /id="webcamStart"/);
   assert.match(dashboard, /id="selectWebcam"/);
 });
+
+test('painel unificado controla transmissões e protege ações de configuração', async () => {
+  const setup = await (await fetch(base + '/api/setup')).json();
+  assert.equal(typeof setup.driver.x64, 'boolean');
+  assert.equal(typeof setup.job.running, 'boolean');
+  for (const endpoint of ['/api/system/stop', '/api/setup/all', '/api/setup/wifi', '/api/setup/driver', '/api/setup/remove']) {
+    assert.equal((await fetch(base + endpoint, { method: 'POST' })).status, 403);
+    assert.equal((await fetch(base + endpoint, { method: 'POST', headers: { 'X-LAN-CAM': 'dashboard', Origin: 'https://example.org' } })).status, 403);
+  }
+  const phone = await openWs('phone');
+  const closed = new Promise(resolve => phone.ws.addEventListener('close', resolve, { once: true }));
+  const options = { method: 'POST', headers: { 'X-LAN-CAM': 'dashboard' } };
+  assert.equal((await fetch(base + '/api/system/stop', options)).status, 200);
+  await closed;
+  assert.equal((await (await fetch(base + '/api/status')).json()).systemEnabled, false);
+  assert.equal((await fetch(base + '/')).status, 200, 'painel continua disponível para religar');
+  await assert.rejects(openWs('phone'), 'sistema desligado rejeita transmissões');
+  assert.equal((await fetch(base + '/api/webcam/start', options)).status, 501);
+  assert.equal((await fetch(base + '/api/system/start', options)).status, 200);
+  const reconnected = await openWs('phone');
+  reconnected.ws.close();
+});

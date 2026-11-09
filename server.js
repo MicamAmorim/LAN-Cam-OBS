@@ -53,6 +53,19 @@ let publishedMode = 'webrtc';
 const peers = new Set();
 let webcamProcess = null;
 let webcamClient = null;
+let systemEnabled = true;
+let httpsServer = null;
+let httpsReady = false;
+function refreshHttps() {
+  if (!fs.existsSync(CERT) || !fs.existsSync(KEY)) return;
+  const credentials = { cert: fs.readFileSync(CERT), key: fs.readFileSync(KEY) };
+  if (httpsServer) { httpsServer.setSecureContext(credentials); return; }
+  httpsServer = https.createServer(credentials, response);
+  httpsServer.on('upgrade', upgrade);
+  httpsServer.on('error', err => { httpsReady = false; console.error('HTTPS:', err.message); httpsServer = null; });
+  httpsServer.listen(HTTPS_PORT, HOST, () => { httpsReady = true; });
+}
+const management = require('./lib/management')(ROOT, refreshHttps);
 const webcamBridgeScript = path.join(ROOT, 'scripts', 'webcam-bridge.ps1');
 const webcamActive = () => Boolean(webcamProcess && webcamProcess.exitCode === null && !webcamProcess.killed);
 function webcamInfo() {
@@ -61,6 +74,7 @@ function webcamInfo() {
     deviceName: 'LAN Cam Webcam' };
 }
 function startWebcam() {
+  if (!systemEnabled) return { ok: false, error: 'Ligue o sistema antes de ativar a webcam.' };
   if (webcamActive()) return { ok: true, ...webcamInfo() };
   if (process.platform !== 'win32') return { ok: false, error: 'Webcam virtual disponível apenas no Windows.' };
   if (!fs.existsSync(webcamBridgeScript)) return { ok: false, error: 'Ponte da webcam ausente. Reinstale.' };
@@ -116,7 +130,7 @@ function response(req, res) {
     'Permissions-Policy': 'camera=(self), microphone=(self)',
     'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; media-src blob:; connect-src 'self' ws: wss:; object-src 'none'; base-uri 'none'"
   };
-  if (pathname === '/api/webcam/start' || pathname === '/api/webcam/stop') {
+  if (['/api/webcam/start', '/api/webcam/stop', '/api/system/start', '/api/system/stop', '/api/setup/wifi', '/api/setup/driver', '/api/setup/all', '/api/setup/remove'].includes(pathname)) {
     if (req.method !== 'POST') { res.writeHead(405, headers).end(); return; }
     let validOrigin = true;
     if (req.headers.origin) {
@@ -127,17 +141,26 @@ function response(req, res) {
     if (!isLoopback(req.socket.remoteAddress) || req.headers['x-lan-cam'] !== 'dashboard' || !validOrigin) {
       res.writeHead(403, headers).end('Acesso negado'); return;
     }
-    const result = pathname.endsWith('/start') ? startWebcam() : stopWebcam();
+    let result;
+    if (pathname.startsWith('/api/setup/')) result = management.run(pathname.split('/').pop());
+    else if (pathname.startsWith('/api/system/')) {
+      systemEnabled = pathname.endsWith('/start');
+      if (!systemEnabled) {
+        stopWebcam();
+        for (const peer of peers) peer.close(1001, 'Sistema desligado');
+      }
+      result = { ok: true, systemEnabled };
+    } else result = pathname.endsWith('/start') ? startWebcam() : stopWebcam();
     res.writeHead(result.ok ? 200 : 501, { ...headers, 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify(result)); return;
   }
   if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405, headers).end(); return; }
-  if (pathname === '/api/config' || pathname === '/api/status') {
+  if (pathname === '/api/config' || pathname === '/api/status' || pathname === '/api/setup') {
     if (!isLoopback(req.socket.remoteAddress)) { res.writeHead(403, headers).end('Painel disponível apenas no computador.'); return; }
     const ips = networkIps();
-    const payload = pathname === '/api/config'
+    const payload = pathname === '/api/setup' ? { ...management.status(), httpsReady } : pathname === '/api/config'
       ? { key: accessKey, httpPort: HTTP_PORT, httpsPort: HTTPS_PORT, httpsReady: fs.existsSync(CERT) && fs.existsSync(KEY), ips }
-      : { connected: Boolean(publisher), mode: publishedMode, viewers: viewers.size, webcam: webcamInfo() };
+      : { systemEnabled, connected: Boolean(publisher), mode: publishedMode, viewers: viewers.size, webcam: webcamInfo() };
     res.writeHead(200, { ...headers, 'Content-Type': 'application/json; charset=utf-8' });
     res.end(JSON.stringify(payload)); return;
   }
@@ -156,6 +179,7 @@ function response(req, res) {
 
 const wss = new WebSocketServer({ noServer: true, maxPayload: 1_600_000, perMessageDeflate: false });
 function upgrade(req, socket, head) {
+  if (!systemEnabled) { socket.write('HTTP/1.1 503 Service Unavailable\r\nConnection: close\r\n\r\n'); socket.destroy(); return; }
   let url;
   try { url = new URL(req.url, 'http://local.invalid'); }
   catch { socket.destroy(); return; }
@@ -200,6 +224,7 @@ wss.on('connection', ws => {
     notifyPublisher({ type: 'viewer-joined', id: ws.id });
   }
   ws.on('message', (raw, isBinary) => {
+    if (!systemEnabled) return;
     if (isBinary) {
       if (ws === publisher) {
         if (publishedMode === 'jpeg') {
@@ -255,11 +280,8 @@ function start() {
     console.log(`\nLAN Cam OBS - painel/OBS: http://localhost:${HTTP_PORT}`);
     console.log(`Rede local (para baixar certificado): ${networkIps().map(ip => `http://${ip}:${HTTP_PORT}`).join(', ') || '(sem IPv4 encontrada)'}`);
   });
-  if (fs.existsSync(CERT) && fs.existsSync(KEY)) {
-    const httpsServer = https.createServer({ cert: fs.readFileSync(CERT), key: fs.readFileSync(KEY) }, response);
-    httpsServer.on('upgrade', upgrade);
-    httpsServer.listen(HTTPS_PORT, HOST, () => console.log(`HTTPS celular: ${networkIps().map(ip => `https://${ip}:${HTTPS_PORT}/phone`).join(', ')}`));
-  } else {
+  refreshHttps();
+  if (!httpsServer) {
     console.log('HTTPS ainda não configurado. Use scripts/setup-https.ps1 para acesso pelo Wi-Fi.');
     console.log('USB/ADB pode funcionar sem HTTPS ao abrir http://localhost no próprio celular.');
   }

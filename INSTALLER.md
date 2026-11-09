@@ -1,3 +1,9 @@
+## Versão 0.4.0 — aplicativo unificado
+
+Abra **LAN Cam OBS** no menu Iniciar. Em **Sistema**, ligue ou desligue as transmissões (o painel permanece disponível). Em **Configuração**, consulte o estado do driver e do HTTPS, instale/repare a webcam ou configure tudo. Em **LAN Cam**, encontre o QR Code do celular, os links do OBS e os controles da webcam.
+
+A configuração do Wi-Fi ativa o HTTPS sem reiniciar o painel. Aceite as solicitações do Windows e instale o certificado público manualmente no celular. A atualização remove os atalhos auxiliares antigos. A ponte da webcam agora cria o evento de sincronização exigido pelo UnityCapture.
+
 # Instalador Windows (.exe)
 
 A partir da versao 0.3.0, o LAN Cam OBS pode ser instalado sem Node.js preinstalado. O instalador inclui o runtime oficial do Node.js para Windows x64, o servidor e a interface. Nao utiliza Electron e nao depende de servico em nuvem.
@@ -15,7 +21,7 @@ Alternativamente, no Git Bash do **Windows**, execute:
 
 A compilacao instala Inno Setup 6 via winget, se necessario, baixa Node.js 24 LTS do site oficial, verifica o SHA-256 contra o manifesto SHASUMS256.txt, roda os testes e gera:
 
-    dist\LAN-Cam-OBS-Setup-0.3.0-win-x64.exe
+    dist\LAN-Cam-OBS-Setup-0.4.0-win-x64.exe
 
 Para compilar sem instalar o Inno Setup automaticamente, use:
 
@@ -27,13 +33,13 @@ A primeira compilacao precisa de Internet para baixar o runtime do Node.js e, po
 
 1. Execute o arquivo .exe gerado e conclua o assistente de instalacao.
 2. Abra LAN Cam OBS pelo menu Iniciar. O servidor inicia em segundo plano e o navegador abre http://localhost:8787.
-3. Para usar Wi-Fi no celular, execute o atalho "LAN Cam OBS - Configurar Wi-Fi HTTPS" no menu Iniciar. Isso instala ou reutiliza mkcert, gera o certificado local e reinicia o servidor. Pode solicitar permissao para instalar uma CA local no Windows.
+3. Para usar Wi-Fi no celular, abra Configuração → Configurar / atualizar Wi-Fi no painel. Isso instala ou reutiliza mkcert, gera o certificado local e ativa HTTPS automaticamente. Pode solicitar permissao para instalar uma CA local no Windows.
 4. No seu celular, instale MANUALMENTE o certificado publico acessivel no painel em http://IP-DO-PC:8787/local-ca.crt, apenas em dispositivos sob seu controle. A adicao de uma CA raiz traz implicacoes de seguranca.
 5. Abra o endereco HTTPS completo do celular exibido no painel e inicie a camera.
 6. Adicione ao OBS uma Fonte Navegador com a URL OBS exibida no painel.
-7. Para parar o aplicativo, use o atalho "LAN Cam OBS - Encerrar servidor".
+7. Para interromper as transmissões, use Sistema → Desligar sistema. O painel permanece disponível para religar.
 
-A versão 0.3.0 inclui também a webcam virtual independente do OBS. O driver DirectShow não é registrado automaticamente; instale-o explicitamente pelo atalho no menu Iniciar. No aplicativo de reunião, selecione "LAN Cam Webcam". Em caso de conflito com outros programas que usam UnityCapture, considere o registro compartilhado do filtro antes de ativá-lo.
+A versão 0.3.0 inclui também a webcam virtual independente do OBS. O driver DirectShow não é registrado automaticamente; instale-o explicitamente em Configuração → Instalar / reparar webcam. No aplicativo de reunião, selecione "LAN Cam Webcam". Em caso de conflito com outros programas que usam UnityCapture, considere o registro compartilhado do filtro antes de ativá-lo.
 
 ## Diretorio e desinstalacao
 
@@ -63,9 +69,10 @@ Sem certificado de assinatura de codigo, o SmartScreen pode exibir alerta de pub
 - O build gera um ícone ICO personalizado e o aplica ao instalador, ao menu Iniciar e ao atalho da área de trabalho.
 - O build baixa e confere dois filtros UnityCapture MIT de uma revisão fixada; a instalação do programa mantém esses arquivos inativos até o usuário autorizar a instalação da webcam virtual via UAC.
 - A webcam DirectShow funciona sem iniciar o OBS, mas pode exigir reiniciar o aplicativo de videoconferência após registrar o dispositivo. O áudio não é transferido pelo aplicativo.
-- O filtro registrado permanece em `%ProgramData%\LAN Cam Webcam\Driver` após a desinstalação comum. Para removê-lo, use primeiro o atalho "LAN Cam OBS - Remover webcam virtual". Este filtro pode compartilhar identificadores com outras instalações UnityCapture; não execute a instalação se você precisar manter uma versão existente intacta.
+- O filtro registrado permanece em `%ProgramData%\LAN Cam Webcam\Driver` após a desinstalação comum. Para removê-lo, use primeiro Configuração → Remover driver da webcam. Este filtro pode compartilhar identificadores com outras instalações UnityCapture; não execute a instalação se você precisar manter uma versão existente intacta.
 
 **Publicar a primeira Release pelo computador Windows (PowerShell):**
 
 Execute `git fetch origin`, entre em `feature/dual-camera-modes` e rode `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-release.ps1`. O script verifica o GitHub CLI, atualiza o código, executa os testes/compila o instalador e publica o `.exe` e seu SHA-256 como `v0.3.0-rc.1` (pré-release público). Somente após testes de instalação e câmera em um Windows real use `-Stable` para publicar `v0.3.0`.
+
 
