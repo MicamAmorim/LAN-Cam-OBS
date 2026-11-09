@@ -26,7 +26,7 @@ public static class LanCamWebcamBridge
         try
         {
             map = MemoryMappedFile.OpenExisting("UnityCapture_Data", MemoryMappedFileRights.ReadWrite);
-            accessor = map.CreateViewAccessor(0, 0, MemoryMappedFileAccess.Write);
+            accessor = map.CreateViewAccessor(0, 0, MemoryMappedFileAccess.ReadWrite);
             mutex = Mutex.OpenExisting("UnityCapture_Mutx");
             sent = EventWaitHandle.OpenExisting("UnityCapture_Sent");
             return true;
