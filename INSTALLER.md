@@ -1,80 +1,85 @@
-## Correções da versão 0.4.1
+# Instalador Windows — 0.4.2
 
-A atualização encerra o runtime desta instalação pelo caminho do executável, mesmo sem um PID válido. O instalador usa o script novo antes de substituir arquivos. A configuração preserva drivers idênticos já carregados e resolve o executável real do mkcert instalado pelo WinGet.
+O instalador inclui Node.js e a interface local. Não requer Node.js pré-instalado, Python ou dependências npm. O destino é Windows 10/11 x64; ARM64, macOS e Linux não são cobertos por este pacote.
 
-## Versão 0.4.0 — aplicativo unificado
+## Baixar e instalar
 
-Abra **LAN Cam OBS** no menu Iniciar. Em **Sistema**, ligue ou desligue as transmissões (o painel permanece disponível). Em **Configuração**, consulte o estado do driver e do HTTPS, instale/repare a webcam ou configure tudo. Em **LAN Cam**, encontre o QR Code do celular, os links do OBS e os controles da webcam.
+1. Abra a [release v0.4.2-rc.1](https://github.com/MicamAmorim/LAN-Cam-OBS/releases/tag/v0.4.2-rc.1) e baixe `LAN-Cam-OBS-Setup-0.4.2-win-x64.exe`.
+2. Conclua o assistente e abra **LAN Cam OBS** no menu Iniciar.
+3. Em **Configuração**, instale/repare a webcam e configure o Wi-Fi, ou use **Configurar tudo**. Aceite as solicitações do Windows quando concordar com as alterações.
+4. No celular, instale manualmente a CA pública indicada no painel, apenas em um aparelho sob seu controle.
+5. Em **LAN Cam**, escaneie o QR Code, abra o endereço HTTPS e inicie a câmera no celular. Copie a URL de fonte de navegador para o OBS.
+6. Para testar a saída de webcam, ative **Webcam** e procure **LAN Cam Webcam** no aplicativo de destino. A compatibilidade com Meet/Edge ainda está pendente; veja a seção abaixo.
 
-A configuração do Wi-Fi ativa o HTTPS sem reiniciar o painel. Aceite as solicitações do Windows e instale o certificado público manualmente no celular. A atualização remove os atalhos auxiliares antigos. A ponte da webcam agora cria o evento de sincronização exigido pelo UnityCapture.
+**Sistema → Desligar sistema** interrompe transmissões e a ponte da webcam. O painel continua disponível para religar. Fechar a aba do painel não encerra o servidor.
 
-# Instalador Windows (.exe)
+## Conferir o download
 
-A partir da versao 0.3.0, o LAN Cam OBS pode ser instalado sem Node.js preinstalado. O instalador inclui o runtime oficial do Node.js para Windows x64, o servidor e a interface. Nao utiliza Electron e nao depende de servico em nuvem.
+Baixe também o arquivo `.exe.sha256` da release. Compare o hash publicado com:
 
-## Compilar no Windows 10/11 x64
+```powershell
+Get-FileHash .\LAN-Cam-OBS-Setup-0.4.2-win-x64.exe -Algorithm SHA256
+```
 
-No PowerShell, na pasta do repositorio:
+O instalador não tem assinatura de código; o Windows pode identificar o publicador como desconhecido.
 
-    git pull origin main
-    .\build.bat
+## Atualizar e desinstalar
 
-Alternativamente, no Git Bash do **Windows**, execute:
+O destino padrão é `%LOCALAPPDATA%\Programs\LAN Cam OBS`. A instalação dos arquivos é por usuário. O registro do driver requer administrador; a preparação de HTTPS também pode solicitar autorização.
 
-    bash build.sh
+Ao atualizar, o instalador usa seu próprio script novo para encerrar o runtime dedicado e esperar sua saída, mesmo sem `.local/server.pid`. Não encerra outros runtimes Node pelo nome. A atualização preserva `.local/` e `certs/` e remove os atalhos auxiliares antigos.
 
-A compilacao instala Inno Setup 6 via winget, se necessario, baixa Node.js 24 LTS do site oficial, verifica o SHA-256 contra o manifesto SHASUMS256.txt, roda os testes e gera:
+O driver registrado permanece em `%ProgramData%\LAN Cam Webcam\Driver`. Para removê-lo, use **Configuração → Remover driver da webcam** antes de desinstalar o aplicativo. DLLs em uso podem exigir fechar os aplicativos de câmera. O filtro compartilha identificadores com UnityCapture; considere outras instalações antes de registrar ou remover esse componente.
 
-    dist\LAN-Cam-OBS-Setup-0.4.1-win-x64.exe
+A desinstalação em **Configurações do Windows → Aplicativos** remove os dados locais e certificados da pasta do aplicativo. A CA confiável instalada pelo mkcert no Windows não é removida automaticamente.
 
-Para compilar sem instalar o Inno Setup automaticamente, use:
+## Diagnóstico
 
-    .\scripts\build-installer.ps1 -NoInstallInno
+| Sintoma | Comportamento e ação |
+| --- | --- |
+| `node.exe`: acesso negado durante atualização | A versão 0.4.1+ encerra o runtime pelo caminho do executável e aguarda sua liberação. Se persistir, feche o LAN Cam e repita; não ignore o arquivo no instalador. |
+| DLL da webcam em uso | DLLs idênticas são preservadas desde 0.4.1. Para trocar uma DLL diferente, feche os aplicativos que usam a webcam e repita. |
+| mkcert: nenhum aplicativo associado | A versão 0.4.1+ resolve o binário real do WinGet, em vez de executar seu link simbólico. |
+| regsvr32 falhou com código vazio | Corrigido em 0.4.2: o script aguarda o processo e lê seu `ExitCode`. Um erro numérico diferente de zero ainda deve ser investigado. |
+| HTTPS ativo, mas celular não conecta | Confira confiança na CA, endereço IP, mesma rede e permissões de câmera. Se o IP mudou, use **Configurar / atualizar Wi-Fi**. |
+| Webcam registrada, mas ausente no Meet/Edge | **Pendência conhecida desta pré-release.** Encerre completamente o navegador quando puder sair da reunião e teste novamente. A causa ainda não foi confirmada. Registro e captura DirectShow não garantem enumeração no navegador. |
 
-A primeira compilacao precisa de Internet para baixar o runtime do Node.js e, possivelmente, o compilador.
+Consulte os detalhes no painel e `.local/configuration.log`. A ponte grava em `.local/webcam-bridge.log`. Não publique chaves de acesso nem certificados privados ao compartilhar um diagnóstico.
 
-## Instalar e usar
+## Compilar
 
-1. Execute o arquivo .exe gerado e conclua o assistente de instalacao.
-2. Abra LAN Cam OBS pelo menu Iniciar. O servidor inicia em segundo plano e o navegador abre http://localhost:8787.
-3. Para usar Wi-Fi no celular, abra Configuração → Configurar / atualizar Wi-Fi no painel. Isso instala ou reutiliza mkcert, gera o certificado local e ativa HTTPS automaticamente. Pode solicitar permissao para instalar uma CA local no Windows.
-4. No seu celular, instale MANUALMENTE o certificado publico acessivel no painel em http://IP-DO-PC:8787/local-ca.crt, apenas em dispositivos sob seu controle. A adicao de uma CA raiz traz implicacoes de seguranca.
-5. Abra o endereco HTTPS completo do celular exibido no painel e inicie a camera.
-6. Adicione ao OBS uma Fonte Navegador com a URL OBS exibida no painel.
-7. Para interromper as transmissões, use Sistema → Desligar sistema. O painel permanece disponível para religar.
+No PowerShell, a partir da branch que contém esta versão:
 
-A versão 0.3.0 inclui também a webcam virtual independente do OBS. O driver DirectShow não é registrado automaticamente; instale-o explicitamente em Configuração → Instalar / reparar webcam. No aplicativo de reunião, selecione "LAN Cam Webcam". Em caso de conflito com outros programas que usam UnityCapture, considere o registro compartilhado do filtro antes de ativá-lo.
+```powershell
+git switch feature/dual-camera-modes
+git pull --ff-only origin feature/dual-camera-modes
+.\build.bat
+```
 
-## Diretorio e desinstalacao
+Alternativamente, no Git Bash do Windows: `bash build.sh`. Para impedir instalação automática do Inno Setup:
 
-Instala por usuario em:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-installer.ps1 -NoInstallInno
+```
 
-    %LOCALAPPDATA%\Programs\LAN Cam OBS
+O build verifica o SHA-256 do Node.js oficial e os blobs dos drivers UnityCapture fixados em revisão, valida sintaxe, executa os testes do servidor e as regressões Windows, e gera `dist\LAN-Cam-OBS-Setup-0.4.2-win-x64.exe`. A primeira compilação requer Internet para as dependências. O workflow `.github/workflows/windows-installer.yml` também compila no Windows e disponibiliza o executável como artefato da execução.
 
-Nao exige administrador para instalar arquivos. A configuracao de HTTPS pode pedir elevacao. Em atualizacoes, preserva a chave em .local/ e os certificados em certs/. A desinstalacao (Configuracoes > Aplicativos) para o servidor e remove esses dados locais. A CA raiz instalada pelo mkcert no armazenamento de certificados do Windows NAO e removida automaticamente: remova-a manualmente se deixar de confiar nela.
+## Publicar
 
-Nao compartilhe seus certificados privados nem links com chaves de acesso. Evite deixar outra copia do servidor em execucao na porta 8787.
+Com Git e GitHub CLI autenticados, branch sincronizada e árvore limpa:
 
-## GitHub Actions
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-release.ps1
+```
 
-O workflow .github/workflows/windows-installer.yml compila o instalador em um runner Windows e publica o .exe como artefato da execucao, se Actions estiver habilitado. O build local nao depende disso.
-
-Sem certificado de assinatura de codigo, o SmartScreen pode exibir alerta de publicador desconhecido. Para distribuicao publica, uma assinatura de codigo e recomendada.
+O script lê a versão de `package.json`, usa as notas em `docs/releases/<versão>.md`, recompila com os testes, gera `.sha256` e publica `v<versão>-rc.1` como pré-release. Uma release existente não é sobrescrita. Para outro candidato, use `-Candidate 2`. O parâmetro `-Stable` publica `v<versão>` e deve ser usado somente depois de validar as pendências de compatibilidade.
 
 ## Limites
 
-- Windows x64; ARM64 e macOS nao cobertos pelo instalador.
-- Runtime Node.js embutido; Python e .venv nao sao necessarios.
-- HTTPS pela primeira vez ainda pode requerer Internet para instalar mkcert; o celular deve confiar manualmente no certificado publico.
-- ADB/USB nao vem incluido no .exe; USB continua disponivel instalando ADB separadamente.
+- O áudio não é transmitido; selecione o microfone no aplicativo de destino.
+- O componente principal do driver é x64. Para registrar x86 também, execute `scripts\install-webcam-driver.ps1 -Include32Bit` com os arquivos do driver presentes.
+- ADB não é incluído; USB/Android depende de instalação e autorização próprias.
+- O celular deve confiar manualmente na CA para usar HTTPS; não há configuração silenciosa dessa confiança.
+- O servidor não configura o roteador. Permita acesso somente na sua rede privada e não compartilhe URLs com chave, `.local/`, `certs/` ou a CA privada.
 
-## Ícone, driver e publicação (v0.3.0)
-
-- O build gera um ícone ICO personalizado e o aplica ao instalador, ao menu Iniciar e ao atalho da área de trabalho.
-- O build baixa e confere dois filtros UnityCapture MIT de uma revisão fixada; a instalação do programa mantém esses arquivos inativos até o usuário autorizar a instalação da webcam virtual via UAC.
-- A webcam DirectShow funciona sem iniciar o OBS, mas pode exigir reiniciar o aplicativo de videoconferência após registrar o dispositivo. O áudio não é transferido pelo aplicativo.
-- O filtro registrado permanece em `%ProgramData%\LAN Cam Webcam\Driver` após a desinstalação comum. Para removê-lo, use primeiro Configuração → Remover driver da webcam. Este filtro pode compartilhar identificadores com outras instalações UnityCapture; não execute a instalação se você precisar manter uma versão existente intacta.
-
-**Publicar a primeira Release pelo computador Windows (PowerShell):**
-
-Execute `git fetch origin`, entre em `feature/dual-camera-modes` e rode `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-release.ps1`. O script verifica o GitHub CLI, atualiza o código, executa os testes/compila o instalador e publica o `.exe` e seu SHA-256 como `v0.3.0-rc.1` (pré-release público). Somente após testes de instalação e câmera em um Windows real use `-Stable` para publicar `v0.3.0`.
+Veja [notas da versão](docs/releases/0.4.2.md), [SETUP.md](SETUP.md) e [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

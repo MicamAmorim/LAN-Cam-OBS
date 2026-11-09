@@ -1,36 +1,36 @@
-## Correções da versão 0.4.1
-
-A atualização encerra o runtime desta instalação pelo caminho do executável, mesmo sem um PID válido. O instalador usa o script novo antes de substituir arquivos. A configuração preserva drivers idênticos já carregados e resolve o executável real do mkcert instalado pelo WinGet.
-
-## Versão 0.4.0 — aplicativo unificado
-
-Abra **LAN Cam OBS** no menu Iniciar. Em **Sistema**, ligue ou desligue as transmissões (o painel permanece disponível). Em **Configuração**, consulte o estado do driver e do HTTPS, instale/repare a webcam ou configure tudo. Em **LAN Cam**, encontre o QR Code do celular, os links do OBS e os controles da webcam.
-
-A configuração do Wi-Fi ativa o HTTPS sem reiniciar o painel. Aceite as solicitações do Windows e instale o certificado público manualmente no celular. A atualização remove os atalhos auxiliares antigos. A ponte da webcam agora cria o evento de sincronização exigido pelo UnityCapture.
-
 # LAN Cam OBS
 
-## v0.3.0 — duas saídas no mesmo aplicativo
+Use o celular como fonte de navegador para OBS pela rede local e teste a saída de webcam virtual DirectShow no Windows. O painel roda no próprio PC, sem serviço de nuvem.
 
-O LAN Cam OBS oferece agora dois modos no painel local, em **http://localhost:8787**:
+**Versão atual: 0.4.2 · pré-release v0.4.2-rc.1.** [Baixar o instalador Windows x64](https://github.com/MicamAmorim/LAN-Cam-OBS/releases/tag/v0.4.2-rc.1) · [Instalação e diagnóstico](INSTALLER.md) · [Notas da versão](docs/releases/0.4.2.md).
 
-- **Fonte para OBS:** mantém a fonte de navegador com WebRTC/JPEG da versão anterior.
-- **Webcam para Google Meet, Zoom e Microsoft Teams:** ativa uma ponte local via JPEG e um filtro de captura DirectShow. **Não é preciso abrir o OBS.** No aplicativo de reunião, selecione **LAN Cam Webcam** no menu de câmeras.
+**Pendência conhecida:** o Windows/DirectShow lista “LAN Cam Webcam”, mas a câmera ainda não apareceu no Google Meet pelo Edge na máquina de teste. A causa permanece em investigação. O registro e uma captura DirectShow bem-sucedidos não comprovam compatibilidade com Meet, Zoom ou Teams. Esta versão é distribuída para testes.
 
-**Antes de usar a webcam no Windows:** instale o programa, abra **Configuração → Instalar / reparar webcam** no painel LAN Cam OBS e aprove a elevação UAC uma única vez. A operação registra um componente externo MIT da biblioteca UnityCapture, cuja versão é fixada e verificada na compilação. O registro não é automático para não modificar o sistema sem consentimento. O filtro compartilhado pode ser removido em Configuração → Remover driver da webcam antes de desinstalar o aplicativo.
+## Instalar e usar
 
-A câmera do celular pode continuar usando WebRTC para OBS enquanto envia quadros JPEG em paralelo para a webcam virtual, somente quando ela está ligada. Isso aumenta uso de CPU e rede, especialmente em 1080p; comece com 720p. O microfone deve ser selecionado separadamente no Meet/Zoom/Teams.
+1. Baixe `LAN-Cam-OBS-Setup-0.4.2-win-x64.exe` na release e conclua o assistente. O Node.js já está incluído; não é necessário instalar Python ou pacotes npm.
+2. Abra o único atalho **LAN Cam OBS** no menu Iniciar.
+3. Em **Configuração**, veja o estado do driver e do HTTPS, clique em **Configurar tudo** ou prepare cada recurso separadamente. Aceite as solicitações do Windows quando concordar com as alterações.
+4. Para Wi-Fi, instale manualmente a CA pública no celular. Em **LAN Cam**, escaneie o QR Code e inicie a câmera no endereço HTTPS.
+5. Para o OBS, copie a URL de fonte de navegador exibida em **LAN Cam**. Para testar a webcam, ative a ponte e procure **LAN Cam Webcam** no aplicativo de destino, considerando a pendência acima.
 
-**Limitação importante:** a ponte foi integrada e os arquivos são verificáveis no repositório, mas a compatibilidade real do filtro de câmera depende do Windows e das versões dos aplicativos. Teste em um PC de destino antes de anunciar uma versão estável. Consulte [INSTALLER.md](INSTALLER.md) e [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Em **Sistema**, ligue ou desligue as transmissões. O painel permanece disponível para religar; fechar a aba não encerra o servidor. O microfone é selecionado separadamente no OBS ou aplicativo de reunião.
 
-## Instalador Windows (.exe)
+## O que mudou
 
-A versao **0.4.0** inclui um build de instalador com **Node.js embutido** (nao e necessario instalar Node no computador que recebe o programa). No Windows x64, execute `build.bat` ou, no Git Bash do Windows, `bash build.sh`. O instalador gerado ficara em `dist/LAN-Cam-OBS-Setup-0.4.1-win-x64.exe`. A primeira compilacao usa Inno Setup e baixa o Node.js oficial com verificacao SHA-256. Consulte [INSTALLER.md](INSTALLER.md) para instalacao, uso e observacoes sobre HTTPS, atualizacao e desinstalacao.
+- **0.4.0:** aplicativo unificado nas áreas Sistema, Configuração e LAN Cam; configuração pelo painel e remoção dos atalhos auxiliares. Correção do evento de sincronização da ponte UnityCapture.
+- **0.4.1:** atualização libera o runtime mesmo sem PID válido; preserva DLLs idênticas em uso; HTTPS executa o binário real do mkcert instalado pelo WinGet; detalhes dos erros aparecem no painel.
+- **0.4.2:** o script aguarda o regsvr32 e verifica o código real do processo, corrigindo o falso erro com código vazio. Novos testes cobrem executáveis gráficos com sucesso e falha.
 
-O instalador cria um único atalho LAN Cam OBS, com controles de sistema e configuração no painel. **HTTPS no celular ainda exige confiar manualmente na CA local**; esta acao nao e automatizada por motivos de seguranca.
+O registro corrigido retornou código 0 e a ponte transmitiu uma imagem de teste DirectShow em 1280×720. Os testes automatizados cobrem sinalização/JPEG, QR, controles locais e regressões Windows. A validação do Meet/Edge permanece pendente.
 
+## Build e publicação
 
-## Instalação rápida (Windows)
+No Windows x64, execute `build.bat` ou `bash build.sh` no Git Bash do Windows. O resultado é `dist/LAN-Cam-OBS-Setup-0.4.2-win-x64.exe`. O build verifica o runtime oficial e o driver de revisão fixada antes de executar os testes. Veja [INSTALLER.md](INSTALLER.md) para requisitos, checksum, atualização e publicação.
+
+O driver UnityCapture é opcional e solicita autorização administrativa. Ele pode compartilhar identificadores com outras instalações UnityCapture. A webcam ativa envia JPEG em paralelo ao WebRTC, aumentando o uso de CPU e rede; comece em 720p.
+
+## Executar a partir do código-fonte (Windows)
 
 Na pasta do repositório, execute **`setup.bat`** (duplo clique) ou, pelo PowerShell:
 
@@ -45,7 +45,7 @@ Aplicativo local, sem nuvem, para transformar o navegador do celular em uma font
 - **WebRTC, via Wi-Fi/LAN:** o servidor Node.js apenas sinaliza; o fluxo de vídeo segue entre celular e cada visualizador (inclusive OBS). Não há retranscodificação no servidor. É a melhor opção inicial para Wi-Fi.
 - **JPEG/WebSocket, via USB + ADB:** quadros JPEG são enviados diretamente pelo túnel TCP `adb reverse` do celular ao PC, reproduzidos em um `canvas` na fonte de navegador. Não precisa de HTTPS nem de Wi-Fi. Tem maior consumo de CPU e banda que o WebRTC e **não é equivalente a webcam USB nativa**.
 
-## Primeira execução no Windows
+## Primeira execução pelo código-fonte
 
 1. Instale **Node.js 20+** (https://nodejs.org/).
 2. Extraia a pasta e clique em `iniciar.bat`. Alternativamente, abra PowerShell na pasta e rode:

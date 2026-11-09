@@ -1,5 +1,5 @@
-# Build local + publicacao verificavel no GitHub Releases.
-# Por padrao publica v0.3.0-rc.1 como pre-release: ainda exige teste de hardware.
+﻿# Build local + publicacao verificavel no GitHub Releases.
+# Por padrao publica v<package.version>-rc.<Candidate> como pre-release.
 [CmdletBinding()]
 param([switch]$Stable, [ValidateRange(1,99)][int]$Candidate = 1)
 $ErrorActionPreference = 'Stop'
@@ -37,14 +37,12 @@ $checksum = Join-Path $Root "dist\$filename.sha256"
 Set-Content -LiteralPath $checksum -Value "$hash  $filename" -Encoding ASCII
 $commit = (& git rev-parse HEAD).Trim()
 if ($LASTEXITCODE -ne 0) { throw 'Nao foi possivel consultar o commit.' }
-$notes = @'
-LAN Cam OBS v0.3.0: OBS (WebRTC/JPEG) e webcam virtual independente para Meet/Zoom/Teams.
-No Windows, registre o dispositivo virtual uma unica vez pelo atalho LAN Cam OBS - Instalar webcam virtual (UAC); depois ative a webcam no painel.
-O modo webcam dispensa o OBS e transmite video, nao microfone. A instalacao do driver e opcional.
-Primeiro release publico: teste a instalacao e a compatibilidade com seus aplicativos/dispositivos antes de distribuicao em larga escala.
-'@
+$notesFile = Join-Path $Root "docs\releases\$version.md"
+if (-not (Test-Path -LiteralPath $notesFile -PathType Leaf)) {
+    throw "Notas da versao ausentes: $notesFile"
+}
 $releaseArgs = @('release','create',$tag,$installer,$checksum,'--repo',$Repository,
-  '--target',$commit,'--title',"LAN Cam OBS $tag",'--notes',$notes)
+  '--target',$commit,'--title',"LAN Cam OBS $tag",'--notes-file',$notesFile)
 if (-not $Stable) { $releaseArgs += '--prerelease' }
 & gh @releaseArgs
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao criar GitHub Release.' }
