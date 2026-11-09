@@ -70,6 +70,8 @@
     byId('wifiSetupStatus').textContent = info.httpsReady ? 'HTTPS ativo. Se a rede mudou, atualize a configuração.' : 'HTTPS indisponível. Configure para conectar o celular por Wi-Fi.';
     document.querySelectorAll('[data-setup]').forEach(b => { b.disabled = !info.supported || info.job.running; });
     if (info.job.message) byId('setupMessage').textContent = info.job.message;
+    byId('setupDetails').textContent = info.job.details || '';
+    byId('setupDetails').classList.toggle('hidden', !info.job.details);
     if (wasConfiguring && !info.job.running && info.job.ok) {
       byId('httpsHint').textContent = info.httpsReady ? 'HTTPS configurado. Instale a CA local no celular.' : 'HTTPS indisponível. Configure o Wi-Fi.';
     }

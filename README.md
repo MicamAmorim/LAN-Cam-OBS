@@ -1,3 +1,7 @@
+## Correções da versão 0.4.1
+
+A atualização encerra o runtime desta instalação pelo caminho do executável, mesmo sem um PID válido. O instalador usa o script novo antes de substituir arquivos. A configuração preserva drivers idênticos já carregados e resolve o executável real do mkcert instalado pelo WinGet.
+
 ## Versão 0.4.0 — aplicativo unificado
 
 Abra **LAN Cam OBS** no menu Iniciar. Em **Sistema**, ligue ou desligue as transmissões (o painel permanece disponível). Em **Configuração**, consulte o estado do driver e do HTTPS, instale/repare a webcam ou configure tudo. Em **LAN Cam**, encontre o QR Code do celular, os links do OBS e os controles da webcam.
@@ -21,7 +25,7 @@ A câmera do celular pode continuar usando WebRTC para OBS enquanto envia quadro
 
 ## Instalador Windows (.exe)
 
-A versao **0.4.0** inclui um build de instalador com **Node.js embutido** (nao e necessario instalar Node no computador que recebe o programa). No Windows x64, execute `build.bat` ou, no Git Bash do Windows, `bash build.sh`. O instalador gerado ficara em `dist/LAN-Cam-OBS-Setup-0.4.0-win-x64.exe`. A primeira compilacao usa Inno Setup e baixa o Node.js oficial com verificacao SHA-256. Consulte [INSTALLER.md](INSTALLER.md) para instalacao, uso e observacoes sobre HTTPS, atualizacao e desinstalacao.
+A versao **0.4.0** inclui um build de instalador com **Node.js embutido** (nao e necessario instalar Node no computador que recebe o programa). No Windows x64, execute `build.bat` ou, no Git Bash do Windows, `bash build.sh`. O instalador gerado ficara em `dist/LAN-Cam-OBS-Setup-0.4.1-win-x64.exe`. A primeira compilacao usa Inno Setup e baixa o Node.js oficial com verificacao SHA-256. Consulte [INSTALLER.md](INSTALLER.md) para instalacao, uso e observacoes sobre HTTPS, atualizacao e desinstalacao.
 
 O instalador cria um único atalho LAN Cam OBS, com controles de sistema e configuração no painel. **HTTPS no celular ainda exige confiar manualmente na CA local**; esta acao nao e automatizada por motivos de seguranca.
 

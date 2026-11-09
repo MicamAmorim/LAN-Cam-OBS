@@ -19,3 +19,6 @@ body:not(.obs){background:radial-gradient(ellipse at 85% -10%,#143b59 0%,transpa
 @media(max-width:600px){.mode-tabs{grid-template-columns:1fr}.brand-logo{width:62px;height:62px}}
 
 .app-navigation{grid-template-columns:repeat(3,minmax(0,1fr));margin:28px 0}.app-navigation button{text-align:center}.app-screen{margin-top:16px}.app-screen h3{color:#5adbcf}@media(max-width:600px){.app-navigation{grid-template-columns:1fr}}
+
+#setupDetails{white-space:pre-wrap;overflow-wrap:anywhere;color:#ffc8b4;font-size:.85rem}
+

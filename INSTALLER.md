@@ -1,3 +1,7 @@
+## Correções da versão 0.4.1
+
+A atualização encerra o runtime desta instalação pelo caminho do executável, mesmo sem um PID válido. O instalador usa o script novo antes de substituir arquivos. A configuração preserva drivers idênticos já carregados e resolve o executável real do mkcert instalado pelo WinGet.
+
 ## Versão 0.4.0 — aplicativo unificado
 
 Abra **LAN Cam OBS** no menu Iniciar. Em **Sistema**, ligue ou desligue as transmissões (o painel permanece disponível). Em **Configuração**, consulte o estado do driver e do HTTPS, instale/repare a webcam ou configure tudo. Em **LAN Cam**, encontre o QR Code do celular, os links do OBS e os controles da webcam.
@@ -21,7 +25,7 @@ Alternativamente, no Git Bash do **Windows**, execute:
 
 A compilacao instala Inno Setup 6 via winget, se necessario, baixa Node.js 24 LTS do site oficial, verifica o SHA-256 contra o manifesto SHASUMS256.txt, roda os testes e gera:
 
-    dist\LAN-Cam-OBS-Setup-0.4.0-win-x64.exe
+    dist\LAN-Cam-OBS-Setup-0.4.1-win-x64.exe
 
 Para compilar sem instalar o Inno Setup automaticamente, use:
 

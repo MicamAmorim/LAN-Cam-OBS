@@ -7,7 +7,7 @@
     <button type="button" data-screen="camera" aria-pressed="false" class="mode-tab">LAN Cam</button>
   </nav>
   <section id="screen-system" class="panel app-screen">
-    <div class="eyebrow">Controle do aplicativo · v0.4.0</div><h2>Seu estúdio local</h2>
+    <div class="eyebrow">Controle do aplicativo · v0.4.1</div><h2>Seu estúdio local</h2>
     <p id="systemStatus" role="status" aria-live="polite">Verificando sistema…</p>
     <div class="actions"><button id="systemStart" type="button">Ligar sistema</button><button id="systemStop" type="button" class="secondary">Desligar sistema</button></div>
     <p class="footnote">Desligar interrompe o vídeo para OBS e aplicativos de reunião. O painel permanece aberto para você configurar e religar o sistema. Fechar esta janela mantém o sistema no estado atual.</p>
@@ -22,6 +22,7 @@
     </div>
     <div class="actions"><button type="button" data-setup="all">Configurar tudo</button><button type="button" data-setup="remove" class="secondary">Remover driver da webcam</button></div>
     <p id="setupMessage" class="hint" role="status" aria-live="polite">As configurações só são alteradas quando você clica em um botão.</p>
+    <pre id="setupDetails" class="hidden"></pre>
     <p>Depois de preparar o Wi-Fi, abra a área LAN Cam para baixar o certificado público no celular e instalá-lo como autoridade confiável. Essa etapa precisa ser feita no próprio aparelho.</p>
     <p class="footnote">O HTTPS cria uma autoridade certificadora local e pode instalar o mkcert pela Internet. O driver solicita autorização de administrador. Se o Windows perguntar sobre acesso à rede, permita na sua rede privada.</p>
   </section>

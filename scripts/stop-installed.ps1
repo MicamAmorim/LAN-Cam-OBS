@@ -1,15 +1,17 @@
-# Para apenas o processo criado pelo launcher desta instalacao.
+# Encerra somente o runtime dedicado desta instalacao, mesmo sem PID salvo.
+[CmdletBinding()]
+param([string]$InstallRoot)
 $ErrorActionPreference = 'Stop'
-$Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$Server = Join-Path $Root 'server.js'
-$PidFile = Join-Path $Root '.local\server.pid'
-if (-not (Test-Path -LiteralPath $PidFile)) { exit 0 }
-$processId = 0
-[void][int]::TryParse((Get-Content -LiteralPath $PidFile -Raw).Trim(), [ref]$processId)
-if ($processId -gt 0) {
-    $proc = Get-CimInstance Win32_Process -Filter "ProcessId = $processId" -ErrorAction SilentlyContinue
-    if ($proc -and $proc.CommandLine -and $proc.CommandLine.Contains($Server)) {
-        Stop-Process -Id $processId -Force -ErrorAction SilentlyContinue
+if (-not $InstallRoot) { $InstallRoot = Join-Path $PSScriptRoot '..' }
+$Root = [IO.Path]::GetFullPath($InstallRoot).TrimEnd('\')
+$Node = Join-Path $Root 'runtime\node.exe'
+foreach ($proc in @(Get-Process -Name node -ErrorAction SilentlyContinue)) {
+    $executable = $null
+    try { $executable = $proc.Path } catch {}
+    if ($executable -and [string]::Equals($executable, $Node, [StringComparison]::OrdinalIgnoreCase)) {
+        Stop-Process -InputObject $proc -Force -ErrorAction Stop
+        if (-not $proc.WaitForExit(5000)) { throw 'O runtime LAN Cam ainda esta em uso. Feche o aplicativo e tente novamente.' }
     }
 }
-Remove-Item -LiteralPath $PidFile -Force -ErrorAction SilentlyContinue
+$PidFile = Join-Path $Root '.local\server.pid'
+if (Test-Path -LiteralPath $PidFile) { Remove-Item -LiteralPath $PidFile -Force }

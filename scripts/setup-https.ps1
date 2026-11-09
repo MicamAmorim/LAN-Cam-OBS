@@ -1,8 +1,11 @@
-# Configure HTTPS para o acesso da câmera do celular pela rede local.
+﻿# Configure HTTPS para o acesso da câmera do celular pela rede local.
+param([string]$MkcertPath)
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $CertDir = Join-Path $Root 'certs'
-if (-not (Get-Command mkcert -ErrorAction SilentlyContinue)) {
+. (Join-Path $PSScriptRoot 'resolve-mkcert.ps1')
+if (-not $MkcertPath) { $MkcertPath = Find-Mkcert }
+if (-not $MkcertPath) {
     Write-Host 'mkcert nao encontrado. Instale com: winget install -e --id FiloSottile.mkcert' -ForegroundColor Yellow
     exit 1
 }
@@ -12,14 +15,14 @@ $IPs = @(Get-NetIPAddress -AddressFamily IPv4 -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty IPAddress -Unique)
 if ($IPs.Count -eq 0) { throw 'Nenhum endereco IPv4 de rede encontrado. Conecte o PC ao Wi-Fi ou rede local.' }
 Write-Host "Enderecos detectados: $($IPs -join ', ')"
-& mkcert -install
+& $MkcertPath -install
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao preparar a CA local.' }
 $certFile = Join-Path $CertDir 'lan.pem'
 $keyFile = Join-Path $CertDir 'lan-key.pem'
 $names = @('localhost', '127.0.0.1', '::1') + $IPs
-& mkcert -cert-file $certFile -key-file $keyFile @names
+& $MkcertPath -cert-file $certFile -key-file $keyFile @names
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao criar o certificado HTTPS.' }
-$CARoot = (& mkcert -CAROOT | Select-Object -First 1).Trim()
+$CARoot = (& $MkcertPath -CAROOT | Select-Object -First 1).Trim()
 Copy-Item -LiteralPath (Join-Path $CARoot 'rootCA.pem') -Destination (Join-Path $CertDir 'rootCA.crt') -Force
 Write-Host ''
 Write-Host 'Pronto! Reinicie o servidor (npm start).' -ForegroundColor Green

@@ -1,4 +1,4 @@
-# Configuracao opt-in de HTTPS. Pode solicitar elevacao para instalar CA no Windows.
+﻿# Configuracao opt-in de HTTPS. Pode solicitar elevacao para instalar CA no Windows.
 param([switch]$NoRestart)
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
@@ -7,12 +7,8 @@ Write-Host 'LAN Cam OBS - configurar HTTPS para o celular via Wi-Fi' -Foreground
 Write-Host 'Este procedimento cria uma autoridade certificadora local no computador.'
 Write-Host 'Depois, instale manualmente a CA publica no seu celular (somente se confiar nesse computador).' -ForegroundColor Yellow
 Write-Host ''
-$mkcert = Get-Command mkcert -ErrorAction SilentlyContinue
-if (-not $mkcert) {
-    $links = Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Links'
-    if (Test-Path -LiteralPath (Join-Path $links 'mkcert.exe')) { $env:Path = "$links;$env:Path" }
-    $mkcert = Get-Command mkcert -ErrorAction SilentlyContinue
-}
+. (Join-Path $PSScriptRoot 'resolve-mkcert.ps1')
+$mkcert = Find-Mkcert
 if (-not $mkcert) {
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         throw 'Instale mkcert manualmente: https://github.com/FiloSottile/mkcert'
@@ -24,10 +20,11 @@ if (-not $mkcert) {
     $links = Join-Path $env:LOCALAPPDATA 'Microsoft\WinGet\Links'
     $env:Path = "$links;$env:Path"
 }
-if (-not (Get-Command mkcert -ErrorAction SilentlyContinue)) {
+$mkcert = Find-Mkcert
+if (-not $mkcert) {
     throw 'mkcert instalado, mas nao encontrado no PATH. Abra outro terminal e tente novamente.'
 }
-& (Join-Path $Root 'scripts\setup-https.ps1')
+& (Join-Path $Root 'scripts\setup-https.ps1') -MkcertPath $mkcert
 if ($LASTEXITCODE -and $LASTEXITCODE -ne 0) { throw 'Falha ao configurar HTTPS.' }
 if (-not $NoRestart) {
     Write-Host 'Reiniciando o servidor local...' -ForegroundColor Cyan

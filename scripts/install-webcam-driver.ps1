@@ -1,4 +1,4 @@
-# Registro opcional e explicito de dispositivo DirectShow (requer UAC).
+﻿# Registro opcional e explicito de dispositivo DirectShow (requer UAC).
 # O driver de terceiros e distribuido pelo projeto UnityCapture (MIT).
 [CmdletBinding()]
 param([switch]$Remove, [switch]$Include32Bit)
@@ -6,6 +6,7 @@ $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $InstalledDir = Join-Path $env:ProgramData 'LAN Cam Webcam\Driver'
 $SourceDir = Join-Path $Root 'driver'
+. (Join-Path $PSScriptRoot 'driver-files.ps1')
 
 $id = [Security.Principal.WindowsIdentity]::GetCurrent()
 $principal = New-Object Security.Principal.WindowsPrincipal($id)
@@ -31,7 +32,7 @@ if (-not $Remove) {
     foreach ($name in @('UnityCaptureFilter32.dll','UnityCaptureFilter64.dll')) {
         $from = Join-Path $SourceDir $name
         if (-not (Test-Path -LiteralPath $from -PathType Leaf)) { throw "Arquivo ausente: $from" }
-        Copy-Item -LiteralPath $from -Destination (Join-Path $InstalledDir $name) -Force
+        Copy-WebcamDriver -From $from -Destination (Join-Path $InstalledDir $name)
     }
 }
 # Windows x64: System32 contem regsvr32 de 64 bits; SysWOW64 o de 32 bits.

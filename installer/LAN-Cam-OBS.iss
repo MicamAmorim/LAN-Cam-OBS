@@ -3,7 +3,7 @@
   #error Execute scripts/build-installer.ps1 em vez de abrir este arquivo diretamente.
 #endif
 #ifndef AppVersion
-  #define AppVersion "0.4.0"
+  #define AppVersion "0.4.1"
 #endif
 #define AppUrl "https://github.com/MicamAmorim/LAN-Cam-OBS"
 
@@ -36,6 +36,7 @@ UninstallDisplayIcon={app}\assets\lan-cam.ico
 Name: "desktopicon"; Description: "Criar atalho na area de trabalho"; GroupDescription: "Atalhos:"; Flags: unchecked
 
 [Files]
+Source: "{#StageDir}\scripts\stop-installed.ps1"; DestName: "upgrade-stop.ps1"; Flags: dontcopy
 Source: "{#StageDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
@@ -52,7 +53,7 @@ Type: files; Name: "{autoprograms}\LAN Cam OBS - Remover webcam virtual.lnk"
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File ""{app}\scripts\launch-installed.ps1"""; Description: "Abrir LAN Cam OBS"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\scripts\stop-installed.ps1"""; Flags: runhidden waituntilterminated
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\scripts\stop-installed.ps1"""; RunOnceId: "StopLanCam"; Flags: runhidden waituntilterminated
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\.local"
@@ -65,12 +66,12 @@ var
   ExitCode: Integer;
 begin
   Result := '';
-  StopScript := ExpandConstant('{app}\scripts\stop-installed.ps1');
-  if FileExists(StopScript) then
-  begin
-    if not Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
-      '-NoProfile -ExecutionPolicy Bypass -File "' + StopScript + '"',
-      ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, ExitCode) then
-      Log('Aviso: nao foi possivel parar a instalacao anterior.');
-  end;
+  ExtractTemporaryFile('upgrade-stop.ps1');
+  StopScript := ExpandConstant('{tmp}\upgrade-stop.ps1');
+  if not Exec(ExpandConstant('{sys}\WindowsPowerShell\v1.0\powershell.exe'),
+    '-NoProfile -ExecutionPolicy Bypass -File "' + StopScript + '" -InstallRoot "' + ExpandConstant('{app}') + '"',
+    ExpandConstant('{tmp}'), SW_HIDE, ewWaitUntilTerminated, ExitCode) then
+    Result := 'Nao foi possivel encerrar o LAN Cam OBS. Feche o aplicativo e tente novamente.'
+  else if ExitCode <> 0 then
+    Result := 'O runtime do LAN Cam OBS continua em uso. Feche o aplicativo e tente novamente.';
 end;
