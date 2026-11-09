@@ -6,6 +6,20 @@ New-Item -ItemType Directory -Path (Join-Path $TestRoot 'runtime') -Force | Out-
 . (Join-Path $Root 'scripts\driver-files.ps1')
 $owned = $null; $unrelated = $null; $locked = $null
 try {
+    # A GUI process must finish before its exit status is checked. Exercise
+    # success and failure, including paths containing spaces and stale status.
+    $gui = Join-Path $TestRoot 'registration test.exe'
+    $code = 'using System; using System.Threading; class Program { static void Main(string[] args) { Thread.Sleep(250); Environment.Exit(args[args.Length-1].Contains("failure") ? 7 : 0); } }'
+    Add-Type -TypeDefinition $code -OutputAssembly $gui -OutputType WindowsApplication
+    $global:LASTEXITCODE = 99
+    Invoke-WebcamRegistration -Executable $gui -Binary (Join-Path $TestRoot 'success driver.dll')
+    $failed = $false
+    try { Invoke-WebcamRegistration -Executable $gui -Binary (Join-Path $TestRoot 'failure driver.dll') } catch { $failed = $_.Exception.Message -like '*codigo 7*' }
+    if (-not $failed) { throw 'GUI failure must report the actual exit code.' }
+    $failed = $false
+    try { Invoke-WebcamRegistration -Executable (Join-Path $env:windir 'System32\regsvr32.exe') -Binary (Join-Path $TestRoot 'missing driver.dll') } catch { $failed = $_.Exception.Message -match 'codigo [1-9][0-9]*' }
+    if (-not $failed) { throw 'Real regsvr32 failure must report a numeric nonzero code.' }
+    'PASS: GUI registration waits and reports actual success/failure independently of LASTEXITCODE'
     $from = Join-Path $TestRoot 'source.dll'
     $destination = Join-Path $TestRoot 'destination.dll'
     [IO.File]::WriteAllText($from, 'same driver binary')

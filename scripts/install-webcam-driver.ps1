@@ -52,13 +52,10 @@ foreach ($item in $targets) {
     }
     if ($Remove) {
         Write-Host "Removendo filtro $($item.Architecture): $($item.Binary)"
-        & $item.Executable /s /u $item.Binary
+        Invoke-WebcamRegistration -Executable $item.Executable -Binary $item.Binary -Remove
     } else {
         Write-Host "Registrando filtro $($item.Architecture): $($item.Binary)"
-        & $item.Executable /s '/i:UnityCaptureName=LAN Cam Webcam' $item.Binary
-    }
-    if ($LASTEXITCODE -ne 0) {
-        throw "Regsvr32 $($item.Architecture) falhou (codigo $LASTEXITCODE), arquivo: $($item.Binary). Execute regsvr32 sem /s para ver os detalhes."
+        Invoke-WebcamRegistration -Executable $item.Executable -Binary $item.Binary
     }
 }
 if ($Remove) {

@@ -3,7 +3,7 @@
   #error Execute scripts/build-installer.ps1 em vez de abrir este arquivo diretamente.
 #endif
 #ifndef AppVersion
-  #define AppVersion "0.4.1"
+  #define AppVersion "0.4.2"
 #endif
 #define AppUrl "https://github.com/MicamAmorim/LAN-Cam-OBS"
 
