@@ -152,4 +152,3 @@ scripts/usb-android.ps1    Ponte USB com ADB
 - [Microsoft: câmera conectada](https://support.microsoft.com/pt-br/windows/apps/phonelink/use-your-mobile-device-s-camera)
 
 > **Sem dependências npm:** o servidor inclui um WebSocket pequeno em `lib/ws-lite.js`. Basta o Node.js e `npm start`; não há downloads de pacotes na primeira execução.
-

@@ -74,5 +74,3 @@ Sem certificado de assinatura de codigo, o SmartScreen pode exibir alerta de pub
 **Publicar a primeira Release pelo computador Windows (PowerShell):**
 
 Execute `git fetch origin`, entre em `feature/dual-camera-modes` e rode `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\publish-release.ps1`. O script verifica o GitHub CLI, atualiza o código, executa os testes/compila o instalador e publica o `.exe` e seu SHA-256 como `v0.3.0-rc.1` (pré-release público). Somente após testes de instalação e câmera em um Windows real use `-Stable` para publicar `v0.3.0`.
-
-

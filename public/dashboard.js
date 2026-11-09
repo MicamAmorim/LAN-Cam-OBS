@@ -66,7 +66,7 @@
     const response = await fetch('/api/setup', { cache: 'no-store' });
     if (!response.ok) throw new Error('Não foi possível consultar a configuração.');
     const info = await response.json();
-    byId('driverSetupStatus').textContent = info.driver.x64 && info.driver.x86 ? 'Configurado · driver 64 e 32 bits registrado.' : info.driver.x64 ? 'Driver 64 bits registrado. Repare para incluir aplicativos de 32 bits.' : 'Webcam ainda não configurada.';
+    byId('driverSetupStatus').textContent = info.driver.x64 && info.driver.x86 ? 'Configurado · driver 64 e 32 bits registrado.' : info.driver.x64 ? 'Configurado · driver 64 bits registrado (32 bits é opcional).' : 'Webcam ainda não configurada.';
     byId('wifiSetupStatus').textContent = info.httpsReady ? 'HTTPS ativo. Se a rede mudou, atualize a configuração.' : 'HTTPS indisponível. Configure para conectar o celular por Wi-Fi.';
     document.querySelectorAll('[data-setup]').forEach(b => { b.disabled = !info.supported || info.job.running; });
     if (info.job.message) byId('setupMessage').textContent = info.job.message;
